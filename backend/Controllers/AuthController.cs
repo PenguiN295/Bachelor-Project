@@ -24,7 +24,7 @@ public class AuthController : ControllerBase
     }
     [AllowAnonymous]
     [HttpPost("register")]
-    public IActionResult Register([FromBody]RegisterRequest request)
+    public async Task<IActionResult> Register([FromBody]RegisterRequest request)
     {
         var hashedPassword = _passwordHasher.HashPassword(request.Password!);
         if(_dbContext.Users.Any(u => u.Email == request.Email))
@@ -46,11 +46,12 @@ public class AuthController : ControllerBase
 
         var token = _tokenService.GenerateToken(user);
         Console.WriteLine("User registered: " + user.Username);
-        _dbContext.Users.Add(user);
-        _dbContext.SaveChanges();
+        await _dbContext.Users.AddAsync(user);
+        await _dbContext.SaveChangesAsync();
         return Ok(new { token });
     }
     [HttpPost("login")]
+    [AllowAnonymous]
     public IActionResult Login([FromBody]LoginRequest request)
     {
         var user = _dbContext.Users.FirstOrDefault(u => u.Email == request.Email);

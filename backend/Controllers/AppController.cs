@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Reflection;
+
 
 [ApiController]
 [Route("api/[controller]")]
@@ -18,6 +20,8 @@ public class AppController : ControllerBase
     {
         _dbContext = dbContext;
     }
+    
+   
     [HttpPost("create-event")]
     [Authorize(Roles = "User")]
     public async Task<IActionResult> CreateEvent([FromBody] EventRequest newEvent)
@@ -39,20 +43,37 @@ public class AppController : ControllerBase
             StartDate = newEvent.StartDate,
             EndDate = newEvent.EndDate,
             MaxAttendees = newEvent.MaxAttendees,
-            CurrentAttendees = newEvent.CurrentAttendees,
+            CurrentAttendees = 0,
             Price = newEvent.Price,
             Location = newEvent.Location,
-            CreatorId = Guid.Parse(userIdClaim!)
+            CreatorId = userGuid
         };
         await _dbContext.Events.AddAsync(eventEntity);
         await _dbContext.SaveChangesAsync();
         return Ok(newEvent);
+    }
+    [HttpGet("event/{id}")]
+    [Authorize(Roles = "User")]
+    public async Task<IActionResult> GetEventById(Guid id)
+    {
+        var eventEntity = await _dbContext.Events.FindAsync(id);
+        if (eventEntity == null)
+        {
+            return NotFound("Event not found");
+        }
+        return Ok(eventEntity);
     }
     [HttpGet("events")]
   //  [Authorize(Roles = "user,admin")]
     public async Task<IActionResult> GetEvents([FromQuery] FilterRequest filter)
     {
         IQueryable<Event> query = _dbContext.Events.AsNoTracking();
+        if(filter.AllFieldsEmpty())
+        {
+            var results = await query.ToListAsync();
+            return Ok(results);
+        }
+
         if (!string.IsNullOrWhiteSpace(filter.Title))
         {
             query = query.Where(e => e.Title.Contains(filter.Title));
@@ -62,9 +83,6 @@ public class AppController : ControllerBase
         {
             query = query.Where(e => e.StartDate == filter.StartDate);
         }
-
-        query = query.Where(e => e.CurrentAttendees < e.MaxAttendees);
-
         if (filter.Price > 0)
         {
             query = query.Where(e => e.Price <= filter.Price);
@@ -74,9 +92,13 @@ public class AppController : ControllerBase
         {
             query = query.Where(e => e.Location.Contains(filter.Location));
         }
-        var results = await query.ToListAsync();
+        if(filter.ShowFull == false)
+        {
+            query = query.Where(e => e.CurrentAttendees < e.MaxAttendees);
+        }
+        var filteredResults = await query.ToListAsync();
 
-        return Ok(results);
+        return Ok(filteredResults);
     }
     [HttpGet("own-events")]
     [Authorize(Roles = "User,Admin")]

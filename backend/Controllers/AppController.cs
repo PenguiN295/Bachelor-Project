@@ -12,7 +12,6 @@ using System.Reflection;
 
 
 [ApiController]
-[Route("api/[controller]")]
 public class AppController : ControllerBase
 {
     public AppDbContext _dbContext;

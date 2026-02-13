@@ -9,7 +9,7 @@ using backend.Data.Entities;
 using backend.Data;
 
 [ApiController]
-[Route("api/[controller]")]
+
 public class AuthController : ControllerBase
 {
     

@@ -1,5 +1,6 @@
 import React, { useState, type ChangeEvent} from 'react';
 import { useNavigate } from 'react-router-dom';
+import url from '../../config';
 
 const LoginPage: React.FC = () => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
@@ -19,12 +20,7 @@ const LoginPage: React.FC = () => {
     setError(null);
 
     try {
-      console.log('Request sent with:', {
-        Email: credentials.email,
-        Password: credentials.password
-      });
-      
-      const response = await fetch('http://localhost:5038/login', {
+      const response = await fetch(`${url}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -34,7 +30,7 @@ const LoginPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Invalid credentials or server error');
+        throw new Error('Invalid credentials');
       }
 
       const data = await response.json();
@@ -55,7 +51,7 @@ const LoginPage: React.FC = () => {
         
         {error && <div className="alert alert-danger py-2">{error}</div>}
         
-        <form onSubmit={handleSubmit} noValidate>
+        <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <label className="form-label">Email Address</label>
             <input
@@ -81,9 +77,12 @@ const LoginPage: React.FC = () => {
             />
           </div>
           <button type="submit" className="btn btn-primary w-100" disabled={loading} >
-            {loading ? 'Authenticating...' : 'Sign In'}
+            {loading ? 'Authenticating...' : 'Login'}
           </button>
         </form>
+        <div className="text-left mt-3">
+          <small>No Account? <a href="/register">Register here</a></small>
+        </div>
       </div>
     </div>
   );

@@ -135,5 +135,21 @@ public class AppController : ControllerBase
         var results = await query.ToListAsync();
         return Ok(results);
     }
+    [HttpGet("user-info")]
+   [Authorize(Roles = "User,Admin")]
+    public async Task<IActionResult> GetUserInfo()
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdClaim, out var userGuid))
+        {
+            return Unauthorized("Invalid or missing User ID in token.");
+        }
+        var user = await _dbContext.Users.FindAsync(userGuid);
+        if (user == null)
+        {
+            return NotFound("User not found");
+        }
+        return Ok(new { user.Username });
+    }
 
 }

@@ -4,14 +4,18 @@ import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import RegisterPage from './pages/RegisterPage';
+import { AuthProvider } from './context/AuthContext';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const App: React.FC = () => {
   return (
+     <AuthProvider>
     <BrowserRouter>
-  
         <Routes>
           <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+       
         <Route 
           path="/dashboard" 
           element={
@@ -20,10 +24,12 @@ const App: React.FC = () => {
             </ProtectedRoute>
           } 
         />
+       
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
  
     </BrowserRouter>
+     </AuthProvider>
   );
 };
 

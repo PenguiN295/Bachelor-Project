@@ -1,12 +1,13 @@
 import React, { useState, type ChangeEvent} from 'react';
 import { useNavigate } from 'react-router-dom';
 import url from '../../config';
-
+import { useAuth } from '../context/AuthContext';
 
 const RegisterPage: React.FC = () => {
     const [credentials, setCredentials] = useState({ username: '',email: '', password: '', confirmPassword: '' });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const {register} = useAuth();
     const navigate = useNavigate();
     const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
         const { name, value } = e.target;
@@ -35,8 +36,7 @@ const RegisterPage: React.FC = () => {
                 throw new Error('Invalid Email or Password');
             }
             const data = await response.json();
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('username', credentials.username);
+            register(credentials.username, data.token);
             navigate('/dashboard');
 
         }

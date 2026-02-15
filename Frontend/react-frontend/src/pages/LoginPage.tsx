@@ -1,11 +1,13 @@
 import React, { useState, type ChangeEvent} from 'react';
 import { useNavigate } from 'react-router-dom';
 import url from '../../config';
+import { useAuth } from '../context/AuthContext';
 
 const LoginPage: React.FC = () => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const {login: authLogin} = useAuth();
   
   const navigate = useNavigate();
 
@@ -13,7 +15,6 @@ const LoginPage: React.FC = () => {
     const { name, value } = e.target;
     setCredentials(prev => ({ ...prev, [name]: value }));
   };
-
  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -30,11 +31,12 @@ const LoginPage: React.FC = () => {
       });
 
       if (!response.ok) {
+        setCredentials(prev => ({ ...prev, password: '' }));
         throw new Error('Invalid credentials');
       }
 
       const data = await response.json();
-      localStorage.setItem('token', data.token);
+      authLogin(data.token);
       navigate('/dashboard');
       
     } catch (err) {

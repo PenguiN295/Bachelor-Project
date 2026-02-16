@@ -7,11 +7,13 @@ import RegisterPage from './pages/RegisterPage';
 import { AuthProvider } from './context/AuthContext';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import UserPage from './pages/UserPage';
+import ChangePage from './pages/ChangePage';
 
 const App: React.FC = () => {
   return (
-     <AuthProvider>
     <BrowserRouter>
+     <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -24,12 +26,24 @@ const App: React.FC = () => {
             </ProtectedRoute>
           } 
         />
+        <Route path="/profile" element={
+            <ProtectedRoute>
+              <UserPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route path="/ChangePage/:modifyUser" element={
+            <ProtectedRoute>
+              <ChangePage />
+            </ProtectedRoute>
+          } 
+        />
        
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
  
-    </BrowserRouter>
      </AuthProvider>
+    </BrowserRouter>
   );
 };
 

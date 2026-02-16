@@ -17,15 +17,15 @@ const events: Event[] = [
     name: 'Music Festival',
     location: 'Barcelona, Spain',
     date: '2026-06-01',
-    imageUrl: ''
+    imageUrl: 'https://picsum.photos/400/300?2'
   }
 ];//dummy data
 
 
 const Dashboard: React.FC = () => {
-  const { username, loading } = useAuth();
+  const {  loading } = useAuth();
   if (loading) return <div>Loading profile...</div>;
-  console.log('Username from context:', username);
+
   return (<>
     <div className="container mt-5 text-left">
       <UserMenu/>

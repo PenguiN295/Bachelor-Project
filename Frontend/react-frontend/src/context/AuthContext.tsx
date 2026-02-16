@@ -2,12 +2,14 @@ import { createContext } from "react";
 import React from "react";
 import { useState, useEffect, useContext} from "react";
 import url from '../../config';
+import { useNavigate } from "react-router";
 interface AuthContextType {
     username: string | null;
     token: string | null;
     login: (token: string) => void;
     logout: () => void;
     register : (username: string, newToken: string) =>void;
+    updateUser: (newUsername: string) => void;
     loading: boolean;
 }
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -15,6 +17,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [username, setUsername] = useState<string | null>(localStorage.getItem('username'));
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (token && !username) {
@@ -49,10 +52,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const logout = () => {
-        localStorage.clear();
         setToken(null);
         setUsername(null);
-        window.location.href = '/login';
+        localStorage.clear();
+       // window.location.href = '/login';
+        navigate('/login');
     };
     const register  =(username: string, newToken: string) => {
         localStorage.setItem('username', username);
@@ -60,9 +64,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('token', newToken);
         setToken(newToken);
     };
-
+    const updateUser = (newUsername:string) => {
+        localStorage.setItem('username', newUsername);
+        setUsername(newUsername);
+    };
     return (
-        <AuthContext.Provider value={{ username, token, login, logout, register, loading }}>
+        <AuthContext.Provider value={{ username, token, login, logout, register, loading, updateUser }}>
             {children}
         </AuthContext.Provider>
     );

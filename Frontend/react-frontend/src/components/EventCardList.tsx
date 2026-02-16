@@ -4,6 +4,7 @@ interface EventListProps {
     events: Event[];
 }
 
+
 const EventCardList: React.FC<EventListProps> = ({ events }) => {
     return (
         <>

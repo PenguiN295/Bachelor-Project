@@ -1,7 +1,7 @@
 namespace backend.Controllers;
 
 using System.Collections.Generic;
-using Azure.Core;
+
 using backend.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

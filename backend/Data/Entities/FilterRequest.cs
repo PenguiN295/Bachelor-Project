@@ -2,15 +2,13 @@ namespace backend.Data.Entities;
 using System.Reflection;
 public class FilterRequest
 {
-    public string Title { get; set; } = "";
-    public string Description { get; set; } = "";
-    public DateTime StartDate { get; set; } = DateTime.MinValue;
+    public string Search { get; set; } = "";
+    public DateOnly StartDate { get; set; } = DateOnly.MinValue;
     public int MaxAttendees { get; set; }
-    public int CurrentAttendees { get; set; }
     public int Price { get; set; }
     public string Location { get; set; } = "";
     public bool ShowFull { get; set; } = false;
-
+    public int Page { get; set; } = 1;
 }
 public static class ObjectExtension
 {

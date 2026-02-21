@@ -55,7 +55,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setToken(null);
         setUsername(null);
         localStorage.clear();
-       // window.location.href = '/login';
         navigate('/login');
     };
     const register  =(username: string, newToken: string) => {

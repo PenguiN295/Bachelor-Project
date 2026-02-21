@@ -19,8 +19,8 @@ public class AppController : ControllerBase
     {
         _dbContext = dbContext;
     }
-    
-   
+
+
     [HttpPost("create-event")]
     [Authorize(Roles = "User")]
     public async Task<IActionResult> CreateEvent([FromBody] EventRequest newEvent)
@@ -39,8 +39,8 @@ public class AppController : ControllerBase
             Id = Guid.NewGuid(),
             Title = newEvent.Title,
             Description = newEvent.Description,
-            StartDate = newEvent.StartDate,
-            EndDate = newEvent.EndDate,
+            StartDate = DateOnly.FromDateTime(newEvent.StartDate),
+            EndDate = DateOnly.FromDateTime(newEvent.EndDate),
             MaxAttendees = newEvent.MaxAttendees,
             CurrentAttendees = 0,
             Price = newEvent.Price,
@@ -63,19 +63,19 @@ public class AppController : ControllerBase
         return Ok(eventEntity);
     }
     [HttpGet("events")]
-  //  [Authorize(Roles = "user,admin")]
+    [Authorize(Roles = "User,Admin")]
     public async Task<IActionResult> GetEvents([FromQuery] FilterRequest filter)
     {
         IQueryable<Event> query = _dbContext.Events.AsNoTracking();
-        if(filter.AllFieldsEmpty())
+        if (filter.AllFieldsEmpty())
         {
             var results = await query.ToListAsync();
             return Ok(results);
         }
 
-        if (!string.IsNullOrWhiteSpace(filter.Title))
+        if (!string.IsNullOrWhiteSpace(filter.Search))
         {
-            query = query.Where(e => e.Title.Contains(filter.Title));
+            query = query.Where(e => e.Title.Contains(filter.Search));
         }
 
         if (filter.StartDate != default)
@@ -91,11 +91,14 @@ public class AppController : ControllerBase
         {
             query = query.Where(e => e.Location.Contains(filter.Location));
         }
-        if(filter.ShowFull == false)
+        if (filter.ShowFull == false)
         {
             query = query.Where(e => e.CurrentAttendees < e.MaxAttendees);
         }
-        var filteredResults = await query.ToListAsync();
+        int pageSize = 50;
+        int skip = (filter.Page - 1) * pageSize;
+
+        var filteredResults = await query.OrderByDescending(e => e.StartDate).Skip(skip).Take(pageSize).ToListAsync();
 
         return Ok(filteredResults);
     }
@@ -111,14 +114,14 @@ public class AppController : ControllerBase
         IQueryable<Event> query = _dbContext.Events
             .AsNoTracking()
             .Where(e => e.CreatorId == userGuid);
-        if (!string.IsNullOrWhiteSpace(filter.Title))
+        if (!string.IsNullOrWhiteSpace(filter.Search))
         {
-            query = query.Where(e => e.Title.Contains(filter.Title));
+            query = query.Where(e => e.Title.Contains(filter.Search));
         }
 
         if (filter.StartDate != default)
         {
-            query = query.Where(e => e.StartDate.Date == filter.StartDate.Date);
+            query = query.Where(e => e.StartDate == filter.StartDate);
         }
         query = query.Where(e => e.CurrentAttendees < e.MaxAttendees);
 
@@ -131,12 +134,14 @@ public class AppController : ControllerBase
         {
             query = query.Where(e => e.Location.Contains(filter.Location));
         }
+        int pageSize = 50;
+        int skip = (filter.Page - 1) * pageSize;
 
-        var results = await query.ToListAsync();
+        var results = await query.OrderByDescending(e => e.StartDate).Skip(skip).Take(pageSize).ToListAsync();
         return Ok(results);
     }
     [HttpGet("user-info")]
-   [Authorize(Roles = "User,Admin")]
+    [Authorize(Roles = "User,Admin")]
     public async Task<IActionResult> GetUserInfo()
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);

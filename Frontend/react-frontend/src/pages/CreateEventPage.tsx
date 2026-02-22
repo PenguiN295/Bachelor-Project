@@ -12,10 +12,9 @@ const CreateEventPage: React.FC = () => {
         descriptioon: '',
         startDate: '',
         endDate: '',
-        maxAttendees: '',
-        price: '',
+        price: 0,
         location: '',
-        showFull: ''
+        showFull: true
     });
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {

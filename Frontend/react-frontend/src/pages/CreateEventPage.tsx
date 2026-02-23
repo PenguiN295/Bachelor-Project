@@ -9,6 +9,7 @@ const CreateEventPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
+    const [file, setFile] = useState<File | null>(null);
     const [formData, setFormData] = useState<Event>({
         title: '',
         description: '',
@@ -29,6 +30,11 @@ const CreateEventPage: React.FC = () => {
             [name]: type === 'number' ? parseFloat(value) || 0 : value
         }));
     };
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setFile(e.target.files[0]);
+        }
+    };
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
@@ -36,28 +42,23 @@ const CreateEventPage: React.FC = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const payload = {
-                ...formData,
-                startDate: new Date(formData.startDate).toISOString(),
-                endDate: new Date(formData.endDate).toISOString(),
-            };
+            const data = new FormData();
+            data.append('Title', formData.title);
+            data.append('Description', formData.description);
+            data.append('StartDate', new Date(formData.startDate).toISOString());
+            data.append('EndDate', new Date(formData.endDate).toISOString());
+            data.append('MaxAttendees', formData.maxAttendees.toString());
+            data.append('Price', formData.price.toString());
+            data.append('Location', formData.location);
+            if (file) {
+                data.append('ImageFile', file);
+            }
             const response = await fetch(`${url}/create-event`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({
-                    Title: payload.title,
-                    Description: payload.description,
-                    StartDate: payload.startDate,
-                    EndDate: payload.endDate,
-                    MaxAttendees: payload.maxAttendees,
-                    CurrentAttendees: payload.currentAttendees,
-                    Price: payload.price,
-                    Location: payload.location,
-                    ImageUrl: payload.imageUrl
-                })
+                body: data
             })
             if (!response.ok) {
                 throw new Error("Failed to create Event");
@@ -113,9 +114,14 @@ const CreateEventPage: React.FC = () => {
                 <input type="text" name="location" value={formData.location} onChange={handleChange} />
             </div>
 
-            <div>
-                <label>Image URL</label>
-                <input type="url" name="imageUrl" value={formData.imageUrl} onChange={handleChange} />
+            <div className="mb-3">
+                <label className="form-label">Event Image</label>
+                <input
+                    type="file"
+                    className="form-control"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                />
             </div>
 
             <button

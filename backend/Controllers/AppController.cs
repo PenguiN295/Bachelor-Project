@@ -9,21 +9,23 @@ using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Reflection;
-
+using backend.Interfaces;
 
 [ApiController]
 public class AppController : ControllerBase
 {
     public AppDbContext _dbContext;
-    public AppController(AppDbContext dbContext)
+    public IPhotoService _photoService;
+    public AppController(AppDbContext dbContext, IPhotoService photoService)
     {
         _dbContext = dbContext;
+        _photoService = photoService;
     }
 
 
     [HttpPost("create-event")]
     [Authorize(Roles = "User")]
-    public async Task<IActionResult> CreateEvent([FromBody] EventRequest newEvent)
+    public async Task<IActionResult> CreateEvent([FromForm] EventRequest newEvent)
     {
         Console.WriteLine(newEvent.Title);
         if (newEvent == null)
@@ -35,7 +37,10 @@ public class AppController : ControllerBase
         {
             return Unauthorized("Invalid or missing User ID in token.");
         }
-        
+        var result = await _photoService.AddPhotoAsync(newEvent.ImageFile);
+
+        if (result.Error != null)
+            return BadRequest(result.Error.Message);
         var eventEntity = new Event
         {
             Id = Guid.NewGuid(),
@@ -48,7 +53,7 @@ public class AppController : ControllerBase
             Price = newEvent.Price,
             Location = newEvent.Location,
             CreatorId = userGuid,
-            ImageUrl = newEvent.ImageUrl
+            ImageUrl = result.SecureUrl.AbsoluteUri
         };
         await _dbContext.Events.AddAsync(eventEntity);
         await _dbContext.SaveChangesAsync();

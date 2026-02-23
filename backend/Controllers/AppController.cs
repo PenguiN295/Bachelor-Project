@@ -25,6 +25,7 @@ public class AppController : ControllerBase
     [Authorize(Roles = "User")]
     public async Task<IActionResult> CreateEvent([FromBody] EventRequest newEvent)
     {
+        Console.WriteLine(newEvent.Title);
         if (newEvent == null)
         {
             return BadRequest("Event is null");
@@ -34,6 +35,7 @@ public class AppController : ControllerBase
         {
             return Unauthorized("Invalid or missing User ID in token.");
         }
+        
         var eventEntity = new Event
         {
             Id = Guid.NewGuid(),
@@ -45,7 +47,8 @@ public class AppController : ControllerBase
             CurrentAttendees = 0,
             Price = newEvent.Price,
             Location = newEvent.Location,
-            CreatorId = userGuid
+            CreatorId = userGuid,
+            ImageUrl = newEvent.ImageUrl
         };
         await _dbContext.Events.AddAsync(eventEntity);
         await _dbContext.SaveChangesAsync();

@@ -11,7 +11,7 @@ const LoginPage: React.FC = () => {
   
   const navigate = useNavigate();
 
-    const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
     setCredentials(prev => ({ ...prev, [name]: value }));
   };

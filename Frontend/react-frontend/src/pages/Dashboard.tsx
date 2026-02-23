@@ -5,6 +5,7 @@ import EventCardList from '../components/EventCardList'
 import { useEvents } from '../hooks/useEvents'
 import LoadingState from '../components/LoadingState';
 import FilterComponent from '../components/FilterComponent';
+import { useNavigate } from 'react-router-dom';
 
 
 
@@ -13,6 +14,11 @@ import FilterComponent from '../components/FilterComponent';
 const Dashboard: React.FC = () => {
 
   const { events, loading, filters, handleFilterChange, handleFilterClear } = useEvents();
+  const navigate = useNavigate();
+  const handleCreate = () =>
+  {
+    navigate('/CreateEvent')
+  }
   return (
     <div className="container mt-5">
       <div className="row mb-4">
@@ -47,7 +53,13 @@ const Dashboard: React.FC = () => {
         </main>
 
       </div>
+      <div>
+          <button onClick={handleCreate}>
+              Create your event!
+          </button>
+      </div>
     </div>
+
   );
 };
 

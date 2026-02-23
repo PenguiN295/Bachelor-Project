@@ -9,6 +9,6 @@ public class EventRequest
     public int CurrentAttendees { get; set; }
     public int Price { get; set; }
     public string Location { get; set; } = null!;
-    public string Photo { get; set; } = null!;
+    public string ImageUrl { get; set; } = null!;
     public Guid CreatorId { get; set; }
 }

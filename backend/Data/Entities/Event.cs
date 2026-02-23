@@ -10,5 +10,7 @@ public class Event
     public int CurrentAttendees { get; set; }
     public int Price { get; set; }
     public string Location { get; set; } = null!;
+    public string ImageUrl { get; set; } = null!;
     public Guid CreatorId { get; set; }
+
 }

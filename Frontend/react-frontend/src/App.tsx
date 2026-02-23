@@ -9,6 +9,7 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import UserPage from './pages/UserPage';
 import ChangePage from './pages/ChangePage';
+import CreateEventPage from './pages/CreateEventPage';
 
 const App: React.FC = () => {
   return (
@@ -38,6 +39,11 @@ const App: React.FC = () => {
             </ProtectedRoute>
           } 
         />
+        <Route path="/CreateEvent" element={
+          <ProtectedRoute>
+            <CreateEventPage/>
+          </ProtectedRoute>
+        }/>
        
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

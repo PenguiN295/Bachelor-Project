@@ -37,7 +37,8 @@ const EventComponent: React.FC<EventProp> = ({ event: {
             {
                 alert("Already Subscribed to this event");
             }
-            alert("Subscribed successfully");
+            else
+                alert("Subscribed successfully");
         }
         catch(err)
         {

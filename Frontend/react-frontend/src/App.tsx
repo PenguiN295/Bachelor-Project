@@ -11,6 +11,7 @@ import UserPage from './pages/UserPage';
 import ChangePage from './pages/ChangePage';
 import CreateEventPage from './pages/CreateEventPage';
 import EventPage from './pages/EventPage';
+import OwnEventsPage from './pages/OwnEventsPage';
 
 const App: React.FC = () => {
   return (
@@ -48,6 +49,11 @@ const App: React.FC = () => {
         <Route path="/Event/:id" element={
           <ProtectedRoute>
             <EventPage />
+          </ProtectedRoute>
+        }/>
+        <Route path="/own-events" element={
+          <ProtectedRoute>
+            <OwnEventsPage />
           </ProtectedRoute>
         }/>
        

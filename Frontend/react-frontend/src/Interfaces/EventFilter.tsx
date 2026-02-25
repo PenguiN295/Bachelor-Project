@@ -6,4 +6,5 @@ export interface EventFilter{
   location?: string;
   showFull?: boolean;
   page: number;
+  createdByMe? : boolean;
 }

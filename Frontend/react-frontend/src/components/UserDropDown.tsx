@@ -14,6 +14,10 @@ const UserDropDown: React.FC = () => {
         e.preventDefault();
         navigate('/profile');
     };
+    const onEventsClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        navigate('/own-events');
+    };
   return(
      <div className="dropdown d-inline-block">
             <button className="btn btn-secondary dropdown-toggle w-100 d-flex justify-content-between align-items-center" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -29,6 +33,10 @@ const UserDropDown: React.FC = () => {
                         <i className="bi bi-person-circle"></i>
                         Profile
                     </button>
+                      <button className="dropdown-item text-primary fw-semibold" onClick={onEventsClick}>
+                        <i className="bi "></i>
+                        My Events
+                    </button> 
                 </li>
             </ul>
 

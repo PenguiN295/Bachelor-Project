@@ -9,6 +9,7 @@ public class FilterRequest
     public string Location { get; set; } = "";
     public bool ShowFull { get; set; } = false;
     public int Page { get; set; } = 1;
+    public bool CreatedByMe { get; set; } = false;
 }
 public static class ObjectExtension
 {

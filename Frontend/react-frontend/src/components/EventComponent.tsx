@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react"
+import url from "../../config"
+import { useAuth } from "../context/AuthContext"
 import type Event from "../Interfaces/Event"
 
 interface EventProp {
@@ -5,6 +8,7 @@ interface EventProp {
 }
 
 const EventComponent: React.FC<EventProp> = ({ event: { 
+    id,
     title, 
     description, 
     startDate, 
@@ -14,6 +18,36 @@ const EventComponent: React.FC<EventProp> = ({ event: {
     price, 
     location 
   } }) => {
+    const [loading, setLoading] = useState<boolean>(false);
+    const {token} = useAuth();
+    const handleSubscribe = async(intent : boolean) =>{
+        try{
+            setLoading(true);
+            const response = await fetch(`${url}/subscribe`,{
+                method: 'POST',
+                headers: {
+                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+                },
+                body : JSON.stringify({Subscribe : intent,
+                    EventId : id
+                })
+            })
+            if(!response.ok)
+            {
+                alert("Already Subscribed to this event");
+            }
+            alert("Subscribed successfully");
+        }
+        catch(err)
+        {
+            console.error(err);
+        }
+        finally{
+            setLoading(false);
+        }
+
+    }
     return <>
 
         <div className="card shadow-sm border-0" style={{ maxWidth: '400px' }}>
@@ -64,9 +98,11 @@ const EventComponent: React.FC<EventProp> = ({ event: {
 
                 <button
                     className="btn btn-primary w-100 fw-semibold"
-                    disabled={currentAttendees >= maxAttendees}
+                    disabled={currentAttendees >= maxAttendees || loading == true}
+                    onClick = {() => handleSubscribe(true)}
                 >
                     {currentAttendees >= maxAttendees ? 'Sold Out' : 'Register Now'}
+                    
                 </button>
             </div>
         </div>

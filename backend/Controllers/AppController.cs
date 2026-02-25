@@ -75,6 +75,11 @@ public class AppController : ControllerBase
     public async Task<IActionResult> GetEvents([FromQuery] FilterRequest filter)
     {
         IQueryable<Event> query = _dbContext.Events.AsNoTracking();
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdClaim, out var userGuid))
+        {
+            return Unauthorized("Invalid or missing User ID in token.");
+        }
         if (filter.AllFieldsEmpty())
         {
             var results = await query.ToListAsync();
@@ -103,50 +108,16 @@ public class AppController : ControllerBase
         {
             query = query.Where(e => e.CurrentAttendees < e.MaxAttendees);
         }
+        if (filter.CreatedByMe == true)
+        {
+            query = query.Where(e => e.CreatorId == userGuid);
+        }
         int pageSize = 50;
         int skip = (filter.Page - 1) * pageSize;
 
         var filteredResults = await query.OrderByDescending(e => e.StartDate).Skip(skip).Take(pageSize).ToListAsync();
 
         return Ok(filteredResults);
-    }
-    [HttpGet("own-events")]
-    [Authorize(Roles = "User,Admin")]
-    public async Task<IActionResult> GetOwnEvents([FromQuery] FilterRequest filter)
-    {
-        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!Guid.TryParse(userIdClaim, out var userGuid))
-        {
-            return Unauthorized("Invalid or missing User ID in token.");
-        }
-        IQueryable<Event> query = _dbContext.Events
-            .AsNoTracking()
-            .Where(e => e.CreatorId == userGuid);
-        if (!string.IsNullOrWhiteSpace(filter.Search))
-        {
-            query = query.Where(e => e.Title.Contains(filter.Search));
-        }
-
-        if (filter.StartDate != default)
-        {
-            query = query.Where(e => e.StartDate == filter.StartDate);
-        }
-        query = query.Where(e => e.CurrentAttendees < e.MaxAttendees);
-
-        if (filter.Price > 0)
-        {
-            query = query.Where(e => e.Price <= filter.Price);
-        }
-
-        if (!string.IsNullOrWhiteSpace(filter.Location))
-        {
-            query = query.Where(e => e.Location.Contains(filter.Location));
-        }
-        int pageSize = 50;
-        int skip = (filter.Page - 1) * pageSize;
-
-        var results = await query.OrderByDescending(e => e.StartDate).Skip(skip).Take(pageSize).ToListAsync();
-        return Ok(results);
     }
     [HttpGet("user-info")]
     [Authorize(Roles = "User,Admin")]
@@ -164,5 +135,47 @@ public class AppController : ControllerBase
         }
         return Ok(new { user.Username });
     }
+    [HttpPost("subscribe")]
+    [Authorize(Roles = "User")]
+    public async Task<IActionResult> SubscribeToEvent([FromBody] SubscribeRequest sr)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdClaim, out var userGuid))
+        {
+            return Unauthorized("Invalid or missing User ID in token.");
+        }
+        var existingSub = await _dbContext.Subscriptions
+        .FirstOrDefaultAsync(s => s.UserId == userGuid && s.EventId == sr.EventId);
+        if (sr.Subscribe)
+        {
+            if (existingSub != null)
+                return BadRequest("Already subscribed to this event.");
 
+            var newSubscription = new EventSubscription
+            {
+                Id = Guid.NewGuid(),
+                UserId = userGuid,
+                EventId = sr.EventId,
+            };
+
+            _dbContext.Subscriptions.Add(newSubscription);
+        }
+        else
+        {
+            if (existingSub == null)
+                return BadRequest("Not currently subscribed to this event.");
+
+            _dbContext.Subscriptions.Remove(existingSub);
+        }
+        await _dbContext.SaveChangesAsync();
+        var ev = await _dbContext.Events.FirstOrDefaultAsync(e => e.Id == sr.EventId);
+        if (ev != null)
+        {
+            ev.CurrentAttendees = await _dbContext.Subscriptions
+                .CountAsync(s => s.EventId == sr.EventId);
+
+            await _dbContext.SaveChangesAsync();
+        }
+        return Ok(sr.Subscribe ? "Subscribed successfully" : "Unsubscribed successfully");
+    }
 }

@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 
 export const useEvent = (id: string) => {
     const {token} = useAuth()
-    const [event, setEv] = useState<Event | null>(null);
+    const [event, setEvent] = useState<Event | null>(null);
     const [loading, setLoading] = useState(false);
     useEffect(() => {
         const fetchEvent = async () => {
@@ -22,7 +22,7 @@ export const useEvent = (id: string) => {
             if(response.ok)
             {
                 const data = await response.json();
-                setEv( data);
+                setEvent( data);
             }
 
 

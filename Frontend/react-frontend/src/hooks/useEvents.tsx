@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { type EventFilter } from '../Interfaces/EventFilter'
 import url from '../../config';
 import { useDebounce } from './useDebounce';
+import type Event from '../Interfaces/Event';
 
 
 const defaultFilters: EventFilter = {
@@ -13,7 +14,7 @@ const defaultFilters: EventFilter = {
 };
 export const useEvents = (initialFilters: Partial<EventFilter> = {}) => {
     const [loading, setLoading] = useState(true);
-    const [events, setEvents] = useState<any[]>([]);
+    const [events, setEvents] = useState<Event[]>([]);
     const [filters, setFilters] = useState<EventFilter>({
         ...defaultFilters,
         ...initialFilters

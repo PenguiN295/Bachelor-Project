@@ -1,11 +1,9 @@
 
 import { useNavigate } from 'react-router-dom';
+import HomeButton from '../components/HomeButton';
 
 const UserPage: React.FC = () => {
     const navigate = useNavigate();
-    const onBackClick = () => {
-        navigate('/dashboard');
-    }
     const onChanceClick = (where: string) =>
     {
         if(where === 'username')
@@ -17,10 +15,7 @@ const UserPage: React.FC = () => {
     return (
         <>
             <div>
-                <button className="btn btn-outline-primary mb-3" onClick={onBackClick}>
-                    <i className="bi bi-arrow-left"></i>
-                    Back to Dashboard
-                </button>
+                <HomeButton></HomeButton>
                 <button className="btn btn-outline-secondary mb-3 ms-2" onClick={() => onChanceClick('username')}>
                     <i className="bi bi-pencil"></i>
                     Change Username

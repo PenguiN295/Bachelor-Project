@@ -1,9 +1,10 @@
-import React, { type FormEvent } from "react"
+import React from "react"
 
 import { type ChangeEvent, useState } from "react";
 import type Event from '../Interfaces/Event'
 import url from "../../config";
 import { useNavigate } from "react-router-dom";
+import HomeButton from "../components/HomeButton";
 
 const CreateEventPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
@@ -11,6 +12,7 @@ const CreateEventPage: React.FC = () => {
     const navigate = useNavigate();
     const [file, setFile] = useState<File | null>(null);
     const [formData, setFormData] = useState<Event>({
+        id:'',
         title: '',
         description: '',
         startDate: '',
@@ -73,6 +75,7 @@ const CreateEventPage: React.FC = () => {
         }
     };
     return (<>
+    <div> <HomeButton/></div>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '500px' }}>
             {error && <div className="alert alert-danger py-2">{error}</div>}
             <h2>Create New Event</h2>

@@ -10,6 +10,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import UserPage from './pages/UserPage';
 import ChangePage from './pages/ChangePage';
 import CreateEventPage from './pages/CreateEventPage';
+import EventPage from './pages/EventPage';
 
 const App: React.FC = () => {
   return (
@@ -42,6 +43,11 @@ const App: React.FC = () => {
         <Route path="/CreateEvent" element={
           <ProtectedRoute>
             <CreateEventPage/>
+          </ProtectedRoute>
+        }/>
+        <Route path="/Event/:id" element={
+          <ProtectedRoute>
+            <EventPage />
           </ProtectedRoute>
         }/>
        

@@ -1,6 +1,8 @@
 const LoadingState = () => (
-  <div className="flex flex-col items-center justify-center p-10 space-y-4">
-    <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+  <div className="d-flex justify-content-center align-items-center p-5">
+    <div className="spinner-border text-primary" role="status">
+      <span className="visually-hidden">Loading...</span>
+    </div>
   </div>
 );
 export default LoadingState

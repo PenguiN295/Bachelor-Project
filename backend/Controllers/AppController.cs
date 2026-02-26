@@ -12,6 +12,7 @@ using System.Reflection;
 using backend.Interfaces;
 
 [ApiController]
+
 public class AppController : ControllerBase
 {
     public AppDbContext _dbContext;
@@ -21,8 +22,6 @@ public class AppController : ControllerBase
         _dbContext = dbContext;
         _photoService = photoService;
     }
-
-
     [HttpPost("create-event")]
     [Authorize(Roles = "User")]
     public async Task<IActionResult> CreateEvent([FromForm] EventRequest newEvent)
@@ -88,7 +87,7 @@ public class AppController : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(filter.Search))
         {
-            query = query.Where(e => e.Title.Contains(filter.Search));
+            query = query.Where(e => e.Title.ToLower().Contains(filter.Search));
         }
 
         if (filter.StartDate != default)
@@ -102,7 +101,7 @@ public class AppController : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(filter.Location))
         {
-            query = query.Where(e => e.Location.Contains(filter.Location));
+            query = query.Where(e => e.Location.ToLower().Contains(filter.Location));
         }
         if (filter.ShowFull == false)
         {
@@ -177,5 +176,26 @@ public class AppController : ControllerBase
             await _dbContext.SaveChangesAsync();
         }
         return Ok(sr.Subscribe ? "Subscribed successfully" : "Unsubscribed successfully");
+    }
+    [HttpGet("subscribed-status/{EventId}")]
+    [Authorize(Roles = "User")]
+    public async Task<IActionResult> IsSubscribed(Guid EventId)
+    {
+        if(EventId == Guid.Empty)
+        {
+            return BadRequest("Event id can't be empty");
+        }
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdClaim, out var userGuid))
+        {
+            return Unauthorized("Invalid or missing User ID in token.");
+        }
+         var existingSub = await _dbContext.Subscriptions
+        .FirstOrDefaultAsync(s => s.UserId == userGuid && s.EventId == EventId);
+        if(existingSub != null)
+        {
+            return Ok(new { status = "Subscribed" });
+        }
+       return Ok(new { status = "Not Subscribed" });
     }
 }

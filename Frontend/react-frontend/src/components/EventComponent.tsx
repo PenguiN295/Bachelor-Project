@@ -1,50 +1,54 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import url from "../../config"
 import { useAuth } from "../context/AuthContext"
 import type Event from "../Interfaces/Event"
 
 interface EventProp {
-    event: Event
+    event: Event,
+    isSubscribed: boolean,
+    onStatusChange: () => void
 }
 
-const EventComponent: React.FC<EventProp> = ({ event: { 
+const EventComponent: React.FC<EventProp> = ({ event: {
     id,
-    title, 
-    description, 
-    startDate, 
-    endDate, 
-    maxAttendees, 
-    currentAttendees, 
-    price, 
-    location 
-  } }) => {
+    title,
+    description,
+    startDate,
+    endDate,
+    maxAttendees,
+    currentAttendees,
+    price,
+    location
+}, isSubscribed,onStatusChange }) => {
     const [loading, setLoading] = useState<boolean>(false);
-    const {token} = useAuth();
-    const handleSubscribe = async(intent : boolean) =>{
-        try{
+    const { token } = useAuth();
+    const handleSubscribe = async (intent: boolean) => {
+        try {
             setLoading(true);
-            const response = await fetch(`${url}/subscribe`,{
+            const response = await fetch(`${url}/subscribe`, {
                 method: 'POST',
                 headers: {
-                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
-                body : JSON.stringify({Subscribe : intent,
-                    EventId : id
+                body: JSON.stringify({
+                    Subscribe: intent,
+                    EventId: id
                 })
             })
-            if(!response.ok)
-            {
+            if (!response.ok) {
                 alert("Already Subscribed to this event");
             }
             else
-                alert("Subscribed successfully");
+            {  
+                !isSubscribed? ( alert("Subscribed successfully")) : (alert("Unsubscribed successfully"))
+                onStatusChange();
+            }
         }
-        catch(err)
-        {
+        catch (err) {
             console.error(err);
         }
-        finally{
+        finally {
             setLoading(false);
         }
 
@@ -53,7 +57,7 @@ const EventComponent: React.FC<EventProp> = ({ event: {
 
         <div className="card shadow-sm border-0" style={{ maxWidth: '400px' }}>
             <div className="card-body">
-                <div className="d-flex justify-content-between align-items-start mb-2">
+                <div className="d-flex justify-content-between align-items-centre mb-2">
                     <h5 className="card-title fw-bold mb-0 text-truncate" title={title}>
                         {title}
                     </h5>
@@ -96,15 +100,21 @@ const EventComponent: React.FC<EventProp> = ({ event: {
                         </span>
                     </div>
                 </div>
+                {isSubscribed ? (<button
+                    className="btn btn-danger w-100 fw-semibold"
+                    disabled={currentAttendees >= maxAttendees || loading == true}
+                    onClick={() => handleSubscribe(false)}>
+                    Unsubscribe
 
+                </button>) :(
                 <button
                     className="btn btn-primary w-100 fw-semibold"
                     disabled={currentAttendees >= maxAttendees || loading == true}
-                    onClick = {() => handleSubscribe(true)}
-                >
+                    onClick={() => handleSubscribe(true)}>
                     {currentAttendees >= maxAttendees ? 'Sold Out' : 'Register Now'}
-                    
-                </button>
+
+                </button>)
+                        }
             </div>
         </div>
     </>

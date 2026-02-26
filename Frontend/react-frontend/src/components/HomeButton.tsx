@@ -11,8 +11,7 @@ const HomeButton : React.FC = () =>
         navigate("/dashboard")
     }
     return <button className="btn btn-outline-primary mb-3" onClick={onHomeClick}>
-                    <i className="bi bi-arrow-left"></i>
-                    Home
+                    <i className="bi bi-house"></i>
                 </button>
 }
 export default HomeButton;

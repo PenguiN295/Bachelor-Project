@@ -16,11 +16,7 @@ const Dashboard: React.FC = () => {
   const { events, loading, filters, handleFilterChange, handleFilterClear } = useEvents();
   return (
     <div className="container mt-5">
-      <div className="row mb-4">
-        <div className="col-12">
-          <UserMenu />
-        </div>
-      </div>
+      
 
       <div className="row">
 

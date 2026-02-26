@@ -15,11 +15,9 @@ const OwnEventsPage: React.FC = () => {
             {loading ? (
                 <LoadingState />
             ) : events.length > 0 ? (<>
-                <HomeButton />
                 <EventCardList events={events} /></>)
 
                 : <> 
-                <HomeButton/>
                 
                 <div> You haven't created any events. Make One!
                     <CreateEventButton />

@@ -4,37 +4,37 @@ import type Event from "../Interfaces/Event"
 import { useAuth } from "../context/AuthContext";
 
 export const useEvent = (id: string) => {
-    const {token} = useAuth()
+    const { token } = useAuth()
     const [event, setEvent] = useState<Event | null>(null);
-    const [loading, setLoading] = useState(false);
-    useEffect(() => {
-        const fetchEvent = async () => {
-            setLoading(true)
-            
-            try {
-                const response = await fetch(`${url}/event/${id}`, {
+    const [loading, setLoading] = useState(true);
+    const fetchEvent = async () => {
+        setLoading(true)
+
+        try {
+            const response = await fetch(`${url}/event/${id}`, {
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
             })
-            if(response.ok)
-            {
+            if (response.ok) {
                 const data = await response.json();
-                setEvent( data);
+                setEvent(data);
             }
 
 
-            } catch (err) {
-                console.log(err)
-            }
-            finally {
-                setLoading(false)
-            }
+        } catch (err) {
+            console.log(err)
         }
-        fetchEvent()
-    }, [id,token]);
+        finally {
+            setLoading(false)
+        }
+    }
+    useEffect(() => {
 
-    return {event,loading};
+        fetchEvent()
+    }, [id, token]);
+
+    return { event, loading, refreshEvent: fetchEvent };
 }

@@ -1,6 +1,5 @@
 
 import { useNavigate } from 'react-router-dom';
-import HomeButton from '../components/HomeButton';
 
 const UserPage: React.FC = () => {
     const navigate = useNavigate();
@@ -15,7 +14,6 @@ const UserPage: React.FC = () => {
     return (
         <>
             <div>
-                <HomeButton></HomeButton>
                 <button className="btn btn-outline-secondary mb-3 ms-2" onClick={() => onChanceClick('username')}>
                     <i className="bi bi-pencil"></i>
                     Change Username
@@ -23,11 +21,7 @@ const UserPage: React.FC = () => {
                 <button className="btn btn-outline-secondary mb-3 ms-2" onClick={() => onChanceClick('password')}>
                     <i className="bi bi-pencil"></i>
                     Change Password
-                </button>
-
-
-
-                 
+                </button> 
             </div>
         </>
 

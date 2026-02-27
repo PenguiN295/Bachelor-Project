@@ -84,7 +84,7 @@ const CreateEventPage: React.FC = () => {
                         <label>Title</label>
                         <input type="text" name="title" value={formData.title} onChange={handleChange} required />
                     </div>
-
+            
                     <div>
                         <label>Description</label>
                         <textarea name="description" value={formData.description} onChange={handleChange} />

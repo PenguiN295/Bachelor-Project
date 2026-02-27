@@ -1,58 +1,21 @@
-import { useState } from "react"
-import url from "../../config"
-import { useAuth } from "../context/AuthContext"
+
 import type Event from "../Interfaces/Event"
 
-interface EventProp {
-    event: Event,
-    isSubscribed: boolean,
-    onStatusChange: () => void
+export interface EventProp {
+    event: Event,  
 }
 
-const EventComponent: React.FC<EventProp> = ({ event: {
-    id,
-    title,
-    description,
-    startDate,
-    endDate,
-    maxAttendees,
-    currentAttendees,
-    price,
-    location
-}, isSubscribed,onStatusChange }) => {
-    const [loading, setLoading] = useState<boolean>(false);
-    const { token } = useAuth();
-    const handleSubscribe = async (intent: boolean) => {
-        try {
-            setLoading(true);
-            const response = await fetch(`${url}/subscribe`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    Subscribe: intent,
-                    EventId: id
-                })
-            })
-            if (!response.ok) {
-                alert("Already Subscribed to this event");
-            }
-            else
-            {  
-                !isSubscribed? ( alert("Subscribed successfully")) : (alert("Unsubscribed successfully"))
-                onStatusChange();
-            }
-        }
-        catch (err) {
-            console.error(err);
-        }
-        finally {
-            setLoading(false);
-        }
-
-    }
+const EventComponent: React.FC<EventProp> = ({ event}) => {
+    const {
+        title,
+        description,
+        startDate,
+        endDate,
+        maxAttendees,
+        currentAttendees,
+        price,
+        location
+    } = event;
     return <>
 
         <div className="card shadow-sm border-0" style={{ maxWidth: '400px' }}>
@@ -100,21 +63,6 @@ const EventComponent: React.FC<EventProp> = ({ event: {
                         </span>
                     </div>
                 </div>
-                {isSubscribed ? (<button
-                    className="btn btn-danger w-100 fw-semibold"
-                    disabled={currentAttendees >= maxAttendees || loading == true}
-                    onClick={() => handleSubscribe(false)}>
-                    Unsubscribe
-
-                </button>) :(
-                <button
-                    className="btn btn-primary w-100 fw-semibold"
-                    disabled={currentAttendees >= maxAttendees || loading == true}
-                    onClick={() => handleSubscribe(true)}>
-                    {currentAttendees >= maxAttendees ? 'Sold Out' : 'Register Now'}
-
-                </button>)
-                        }
             </div>
         </div>
     </>

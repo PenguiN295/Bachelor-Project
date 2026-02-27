@@ -13,6 +13,9 @@ import CreateEventPage from './pages/CreateEventPage';
 import EventPage from './pages/EventPage';
 import OwnEventsPage from './pages/OwnEventsPage';
 import Layout from './components/Layout';
+//import ResourceOwnerRoute from './components/ResourceOwnerRoute';
+import EditEventPage from './pages/EditEventPage';
+import ResourceOwnerRoute from './components/ResourceOwnerRoute';
 
 const App: React.FC = () => {
   return (
@@ -22,44 +25,20 @@ const App: React.FC = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
-          <Route element={<Layout />}>
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/profile" element={
-              <ProtectedRoute>
-                <UserPage />
-              </ProtectedRoute>
-            }
-            />
-            <Route path="/ChangePage/:modifyUser" element={
-              <ProtectedRoute>
-                <ChangePage />
-              </ProtectedRoute>
-            }
-            />
-            <Route path="/CreateEvent" element={
-              <ProtectedRoute>
-                <CreateEventPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/Event/:id" element={
-              <ProtectedRoute>
-                <EventPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/own-events" element={
-              <ProtectedRoute>
-                <OwnEventsPage />
-              </ProtectedRoute>
-            } />
-
+          <Route element={<ProtectedRoute />}>
+            <Route element={<Layout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/profile" element={<UserPage />} />
+              <Route path="/ChangePage/:modifyUser" element={<ChangePage />} />
+              <Route path="/CreateEvent" element={<CreateEventPage />} />
+              <Route path="/Event/:id" element={<EventPage />} />
+              <Route element = {<ResourceOwnerRoute/>}>
+              <Route path="/Event/:id/edit" element={<EditEventPage />} />
+              </Route>
+              <Route path="/own-events" element={<OwnEventsPage />} />
+            </Route>
           </Route>
+
 
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

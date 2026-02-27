@@ -1,6 +1,6 @@
 import { createContext } from "react";
 import React from "react";
-import { useState, useEffect, useContext} from "react";
+import { useState, useEffect, useContext } from "react";
 import url from '../../config';
 import { useNavigate } from "react-router";
 interface AuthContextType {
@@ -8,7 +8,7 @@ interface AuthContextType {
     token: string | null;
     login: (token: string) => void;
     logout: () => void;
-    register : (username: string, newToken: string) =>void;
+    register: (username: string, newToken: string) => void;
     updateUser: (newUsername: string) => void;
     loading: boolean;
 }
@@ -41,10 +41,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             localStorage.setItem('username', data.username);
         } catch (error) {
             console.error('Error fetching user info:', error);
+            logout();
         } finally {
             setLoading(false);
         }
     };
+    
 
     const login = (newToken: string) => {
         localStorage.setItem('token', newToken);
@@ -57,13 +59,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.clear();
         navigate('/login');
     };
-    const register  =(username: string, newToken: string) => {
+    const register = (username: string, newToken: string) => {
         localStorage.setItem('username', username);
         setUsername(username);
         localStorage.setItem('token', newToken);
         setToken(newToken);
     };
-    const updateUser = (newUsername:string) => {
+    const updateUser = (newUsername: string) => {
         localStorage.setItem('username', newUsername);
         setUsername(newUsername);
     };
@@ -74,8 +76,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 };
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
-  return context;
+    const context = useContext(AuthContext);
+    if (!context) throw new Error('useAuth must be used within an AuthProvider');
+    return context;
 };
 

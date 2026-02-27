@@ -198,4 +198,23 @@ public class AppController : ControllerBase
         }
        return Ok(new { status = "Not Subscribed" });
     }
+    [HttpGet("ownership-status/{EventId}")]
+    [Authorize(Roles ="User")]
+    public async Task<IActionResult> IsOwner(Guid EventId)
+    {
+        if(EventId == Guid.Empty)
+        {
+            return BadRequest("Event id can't be empty");
+        }
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdClaim, out var userGuid))
+        {
+            return Unauthorized("Invalid or missing User ID in token.");
+        }
+    var ev = await _dbContext.Events.FirstOrDefaultAsync(e => e.CreatorId == userGuid && e.Id == EventId);
+    if(ev != null){
+        return Ok(new {status = "Owner"});
+    }
+    return Ok(new { status = "Not Owner"});
+    }
 }

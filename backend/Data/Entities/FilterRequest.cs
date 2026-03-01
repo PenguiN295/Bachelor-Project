@@ -3,7 +3,7 @@ using System.Reflection;
 public class FilterRequest
 {
     public string Search { get; set; } = "";
-    public DateOnly StartDate { get; set; } = DateOnly.MinValue;
+    public DateTimeOffset StartDate { get; set; } = DateTimeOffset.MinValue;
     public int MaxAttendees { get; set; }
     public int Price { get; set; }
     public string Location { get; set; } = "";

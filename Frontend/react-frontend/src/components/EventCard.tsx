@@ -37,15 +37,15 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
                     </p>
                     <p className="card-text text-muted small">
                         <i className="bi bi-calendar-event me-1"></i>
-                        {new Date(event.startDate).toLocaleDateString('en-US', {
+                        {new Date(event.startAt).toLocaleDateString('en-US', {
                             weekday: 'short',
                             month: 'short',
                             day: 'numeric'
                         })}
-                        {event.startDate !== event.endDate && (
+                        {event.startAt !== event.endAt && (
                             <>
                                 {" — "}
-                                {new Date(event.endDate).toLocaleDateString('en-US', {
+                                {new Date(event.endAt).toLocaleDateString('en-US', {
                                     weekday: 'short',
                                     month: 'short',
                                     day: 'numeric'

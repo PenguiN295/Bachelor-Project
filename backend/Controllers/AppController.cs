@@ -49,10 +49,8 @@ public class AppController : ControllerBase
             Id = Guid.NewGuid(),
             Title = newEvent.Title,
             Description = newEvent.Description,
-            StartDate = newEvent.StartDate,
-            EndDate = newEvent.EndDate,
-            StartTime = newEvent.StartTime,
-            EndTime = newEvent.EndTime,
+            StartAt = newEvent.StartAt.ToUniversalTime(),
+            EndAt = newEvent.EndAt.ToUniversalTime(),
             MaxAttendees = newEvent.MaxAttendees,
             CurrentAttendees = 0,
             Price = newEvent.Price,
@@ -93,12 +91,12 @@ public class AppController : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(filter.Search))
         {
-            query = query.Where(e => e.Title.ToLower().Contains(filter.Search));
+            query = query.Where(e => EF.Functions.Like(e.Title, $"%{filter.Search}%"));
         }
 
         if (filter.StartDate != default)
         {
-            query = query.Where(e => e.StartDate == filter.StartDate);
+            query = query.Where(e => e.StartAt == filter.StartDate.Date);
         }
         if (filter.Price > 0)
         {
@@ -107,7 +105,7 @@ public class AppController : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(filter.Location))
         {
-            query = query.Where(e => e.Location.ToLower().Contains(filter.Location));
+            query = query.Where(e => EF.Functions.Like(e.Location,$"%{filter.Location}%"));
         }
         if (filter.ShowFull == false)
         {
@@ -120,7 +118,7 @@ public class AppController : ControllerBase
         int pageSize = 50;
         int skip = (filter.Page - 1) * pageSize;
 
-        var filteredResults = await query.OrderByDescending(e => e.StartDate).Skip(skip).Take(pageSize).ToListAsync();
+        var filteredResults = await query.OrderByDescending(e => e.StartAt).Skip(skip).Take(pageSize).ToListAsync();
 
         return Ok(filteredResults);
     }
@@ -247,6 +245,24 @@ public class AppController : ControllerBase
         _dbContext.Events.Update(existingEvent);
         await _dbContext.SaveChangesAsync();
         return Ok(new { status = "Saved"});
+    }
+    [HttpDelete("delete-event/{eventId}")]
+    [Authorize(Roles = "User")]
+    public async Task<IActionResult> DeleteEvent(Guid eventId)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdClaim, out var userGuid))
+        {
+            return Unauthorized("Invalid or missing User ID in token.");
+        }
+        var existingEvent = await _dbContext.Events.FirstOrDefaultAsync(e => e.Id == eventId);
+        if (existingEvent == null)
+        {
+            return BadRequest("Event not found");
+        }
+        _dbContext.Events.Remove(existingEvent);
+        await _dbContext.SaveChangesAsync();
+        return Ok(new { status = "Deleted"});
     }
 
 }

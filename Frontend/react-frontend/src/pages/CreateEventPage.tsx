@@ -6,17 +6,15 @@ import { useNavigate } from "react-router-dom";
 import { useCreateEvent } from "../hooks/useCreateEvent";
 
 const CreateEventPage: React.FC = () => {
-    const { mutate, isPending, error } = useCreateEvent();
+    const { createEvent, isPending, error } = useCreateEvent();
     const navigate = useNavigate();
     const [file, setFile] = useState<File | null>(null);
     const [formData, setFormData] = useState<Event>({
         id: '',
         title: '',
         description: '',
-        startDate: '',
-        endDate: '',
-        startTime: '',
-        endTime: '',
+        startAt: '',
+        endAt: '',
         maxAttendees: 0,
         currentAttendees: 0,
         price: 0,
@@ -47,7 +45,7 @@ const CreateEventPage: React.FC = () => {
 
         if (file) data.append('ImageFile', file);
 
-        mutate(data, {
+        createEvent(data, {
             onSuccess: () => navigate('/dashboard')
         });
     };
@@ -71,24 +69,11 @@ const CreateEventPage: React.FC = () => {
                     <div style={{ display: 'flex', gap: '10px' }}>
                         <div>
                             <label>Start Date</label>
-                            <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} />
+                            <input type="datetime-local" name="startAt" value={formData.startAt} onChange={handleChange} />
                         </div>
                         <div>
                             <label>End Date</label>
-                            <input type="date" name="endDate" value={formData.endDate} onChange={handleChange} />
-                        </div>
-                    </div>
-
-
-
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                        <div>
-                            <label>Start Time</label>
-                            <input type="time" name="startTime" value={formData.startTime} onChange={handleChange} />
-                        </div>
-                        <div>
-                            <label>End Time</label>
-                            <input type="time" name="endTime" value={formData.endTime} onChange={handleChange} />
+                            <input type="datetime-local" name="endAt" value={formData.endAt} onChange={handleChange} />
                         </div>
                     </div>
 

@@ -70,6 +70,24 @@ export const useEvent = (id: string) => {
       alert("Changes saved!");
     },
   });
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+        console.log(id);
+      const res = await fetch(`${url}/delete-event/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) throw new Error("Deletion failed");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+      alert("Event deleted!");
+    },
+  });
 
   return {
     event: eventQuery.data ?? null,
@@ -78,6 +96,7 @@ export const useEvent = (id: string) => {
     loading: eventQuery.isLoading || ownershipQuery.isLoading || subscriptionQuery.isLoading,
     error: eventQuery.error || ownershipQuery.error || subscriptionQuery.error,
     updateEvent: updateMutation.mutate,
+    deleteEvent: deleteMutation.mutate,
     isUpdating: updateMutation.isPending,
   };
 };

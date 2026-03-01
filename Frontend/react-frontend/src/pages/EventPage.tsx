@@ -6,7 +6,7 @@ import SubscribeComponent from "../components/SubscribeComponent";
 
 const EventPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
-    const { event, loading, isOwner, isSubscribed, updateEvent, error } = useEvent(id!);
+    const { event, loading, isOwner, isSubscribed, updateEvent, deleteEvent, error } = useEvent(id!);
 
     if (loading) return <div className="vh-100 d-flex justify-content-center align-items-center"><LoadingState /></div>;
     if (error || !event) return <div className="vh-100 d-flex justify-content-center align-items-center">Something went wrong</div>;
@@ -15,7 +15,7 @@ const EventPage: React.FC = () => {
             {loading ? (
                 <LoadingState />
             ) : event ? (
-                isOwner ? (<EventComponent event={event} isEditable={true} onSave={updateEvent} />) : (
+                isOwner ? (<EventComponent event={event} isEditable={true} onSave={updateEvent} onDelete={deleteEvent} />) : (
                     <div>
                         <EventComponent event={event} />
                         <SubscribeComponent event={event} isSubscribed={isSubscribed}

@@ -1,15 +1,17 @@
 
 import { useState } from "react";
 import type Event from "../Interfaces/Event"
+import { useNavigate } from "react-router-dom";
 
 export interface EventProp {
     event: Event;  
     isEditable?: boolean;
     onSave?: (updatedEvent: Event) => void;
+    onDelete?: () => void;
 }
 
-const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave}) => {
-
+const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete}) => {
+    const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const [tempEvent, setTempEvent] = useState<Event>(event);
 
@@ -22,10 +24,16 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave}) => {
         onSave?.(tempEvent);
         setIsEditing(false);
     };
+    const handleDelete = () =>{
+        setIsEditing(false);
+        onDelete?.();
+        navigate("/dashboard");
+    }
 
     const handleCancel = () => {
         setTempEvent({ ...event }); 
         setIsEditing(false);
+        
     };
     return (
         <div className="card shadow-sm border-0" style={{ maxWidth: '400px' }}>
@@ -81,9 +89,9 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave}) => {
                         <div className="p-2 border-start border-primary border-4 bg-light rounded-end">
                             <label className="d-block text-uppercase text-muted fw-bold" style={{ fontSize: '0.65rem' }}>Start Date</label>
                             {isEditing ? (
-                                <input type="date" name="startDate" className="form-control form-control-sm border-0 bg-transparent p-0" value={tempEvent.startDate} onChange={handleInputChange} />
+                                <input type="datetime-local" name="startAt" className="form-control form-control-sm border-0 bg-transparent p-0" value={tempEvent.startAt} onChange={handleInputChange} />
                             ) : (
-                                <span className="small fw-medium">{event.startDate}</span>
+                                <span className="small fw-medium">{event.startAt}</span>
                             )}
                         </div>
                     </div>
@@ -91,40 +99,13 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave}) => {
                         <div className="p-2 border-start border-secondary border-4 bg-light rounded-end">
                             <label className="d-block text-uppercase text-muted fw-bold" style={{ fontSize: '0.65rem' }}>End Date</label>
                             {isEditing ? (
-                                <input type="date" name="endDate" className="form-control form-control-sm border-0 bg-transparent p-0" value={tempEvent.endDate} onChange={handleInputChange} />
+                                <input type="datetime-local" name="endAt" className="form-control form-control-sm border-0 bg-transparent p-0" value={tempEvent.endAt} onChange={handleInputChange} />
                             ) : (
-                                <span className="small fw-medium">{event.endDate}</span>
+                                <span className="small fw-medium">{event.endAt}</span>
                             )}
                         </div>
                     </div>
                 </div>
-
-                <div className="row g-2 mb-4">
-                    <div className="col-6">
-                        <div className="p-2 border-start border-primary border-4 bg-light rounded-end">
-                            <label className="d-block text-uppercase text-muted fw-bold" style={{ fontSize: '0.65rem' }}>Start Time</label>
-                            {isEditing ? (
-                                <input type="time" name="startTime" className="form-control form-control-sm border-0 bg-transparent p-0" value={tempEvent.startTime} onChange={handleInputChange} />
-                            ) : (
-                                <span className="small fw-medium">{event.startTime}</span>
-                            )}
-                        </div>
-                    </div>
-                    <div className="col-6">
-                        <div className="p-2 border-start border-secondary border-4 bg-light rounded-end">
-                            <label className="d-block text-uppercase text-muted fw-bold" style={{ fontSize: '0.65rem' }}>End Time</label>
-                            {isEditing ? (
-                                <input type="time" name="endTime" className="form-control form-control-sm border-0 bg-transparent p-0" value={tempEvent.endTime} onChange={handleInputChange} />
-                            ) : (
-                                <span className="small fw-medium">{event.endTime}</span>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-
-
-
                 <div className="mb-3">
                     <div className="d-flex align-items-center mb-3 text-secondary">
                         <i className="bi bi-geo-alt-fill me-2"></i>
@@ -155,6 +136,7 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave}) => {
                             <>
                                 <button className="btn btn-sm btn-outline-secondary" onClick={handleCancel}>Cancel</button>
                                 <button className="btn btn-sm btn-primary" onClick={handleSave}>Save Changes</button>
+                                <button className="btn btn-sm btn-alert" onClick={handleDelete}>Delete Event</button>
                             </>
                         ) : (
                             <button className="btn btn-sm btn-outline-primary" onClick={() => setIsEditing(true)}>
@@ -163,6 +145,7 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave}) => {
                         )}
                     </div>
                 )}
+
             </div>
         </div>
     );

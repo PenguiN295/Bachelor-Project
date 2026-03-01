@@ -86,6 +86,7 @@ local.properties
 *.iml
 
 
+event-seeder/
 node_modules/
 npm-debug.log
 yarn-error.log

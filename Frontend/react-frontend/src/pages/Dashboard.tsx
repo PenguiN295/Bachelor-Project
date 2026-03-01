@@ -1,5 +1,4 @@
 
-import UserMenu from '../components/UserMenu';
 import React from 'react'
 import EventCardList from '../components/EventCardList'
 import { useEvents } from '../hooks/useEvents'
@@ -28,6 +27,7 @@ const Dashboard: React.FC = () => {
               handleFilterChange={handleFilterChange}
               handleFilterClear={handleFilterClear}
             />
+            <CreateEventButton/>
           </div>
         </aside>
 
@@ -43,9 +43,6 @@ const Dashboard: React.FC = () => {
           )}
         </main>
 
-      </div>
-      <div>
-          <CreateEventButton/>
       </div>
     </div>
 

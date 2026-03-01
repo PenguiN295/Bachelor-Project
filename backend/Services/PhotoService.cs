@@ -17,7 +17,6 @@ public class PhotoService : IPhotoService
     public async Task<ImageUploadResult> AddPhotoAsync(IFormFile file)
     {
         var uploadResult = new ImageUploadResult();
-
         if (file.Length > 0)
         {
             using var stream = file.OpenReadStream();
@@ -28,7 +27,6 @@ public class PhotoService : IPhotoService
             };
             uploadResult = await _cloudinary.UploadAsync(uploadParams);
         }
-
         return uploadResult;
     }
     

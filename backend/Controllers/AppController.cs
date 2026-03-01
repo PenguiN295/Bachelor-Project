@@ -10,6 +10,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Reflection;
 using backend.Interfaces;
+using Mapster;
 
 [ApiController]
 
@@ -36,23 +37,28 @@ public class AppController : ControllerBase
         {
             return Unauthorized("Invalid or missing User ID in token.");
         }
-        var result = await _photoService.AddPhotoAsync(newEvent.ImageFile);
+        string? imageUrl = null;
+        if(newEvent.ImageFile != null)
+        {
+            var result = await _photoService.AddPhotoAsync(newEvent.ImageFile);
+            imageUrl = result.SecureUrl.AbsoluteUri;
+        }
 
-        if (result.Error != null)
-            return BadRequest(result.Error.Message);
         var eventEntity = new Event
         {
             Id = Guid.NewGuid(),
             Title = newEvent.Title,
             Description = newEvent.Description,
-            StartDate = DateOnly.FromDateTime(newEvent.StartDate),
-            EndDate = DateOnly.FromDateTime(newEvent.EndDate),
+            StartDate = newEvent.StartDate,
+            EndDate = newEvent.EndDate,
+            StartTime = newEvent.StartTime,
+            EndTime = newEvent.EndTime,
             MaxAttendees = newEvent.MaxAttendees,
             CurrentAttendees = 0,
             Price = newEvent.Price,
             Location = newEvent.Location,
             CreatorId = userGuid,
-            ImageUrl = result.SecureUrl.AbsoluteUri
+            ImageUrl = imageUrl
         };
         await _dbContext.Events.AddAsync(eventEntity);
         await _dbContext.SaveChangesAsync();
@@ -181,7 +187,7 @@ public class AppController : ControllerBase
     [Authorize(Roles = "User")]
     public async Task<IActionResult> IsSubscribed(Guid EventId)
     {
-        if(EventId == Guid.Empty)
+        if (EventId == Guid.Empty)
         {
             return BadRequest("Event id can't be empty");
         }
@@ -190,19 +196,19 @@ public class AppController : ControllerBase
         {
             return Unauthorized("Invalid or missing User ID in token.");
         }
-         var existingSub = await _dbContext.Subscriptions
-        .FirstOrDefaultAsync(s => s.UserId == userGuid && s.EventId == EventId);
-        if(existingSub != null)
+        var existingSub = await _dbContext.Subscriptions
+       .FirstOrDefaultAsync(s => s.UserId == userGuid && s.EventId == EventId);
+        if (existingSub != null)
         {
             return Ok(new { status = "Subscribed" });
         }
-       return Ok(new { status = "Not Subscribed" });
+        return Ok(new { status = "Not Subscribed" });
     }
     [HttpGet("ownership-status/{EventId}")]
-    [Authorize(Roles ="User")]
+    [Authorize(Roles = "User")]
     public async Task<IActionResult> IsOwner(Guid EventId)
     {
-        if(EventId == Guid.Empty)
+        if (EventId == Guid.Empty)
         {
             return BadRequest("Event id can't be empty");
         }
@@ -211,10 +217,36 @@ public class AppController : ControllerBase
         {
             return Unauthorized("Invalid or missing User ID in token.");
         }
-    var ev = await _dbContext.Events.FirstOrDefaultAsync(e => e.CreatorId == userGuid && e.Id == EventId);
-    if(ev != null){
-        return Ok(new {status = "Owner"});
+        var ev = await _dbContext.Events.FirstOrDefaultAsync(e => e.CreatorId == userGuid && e.Id == EventId);
+        if (ev != null)
+        {
+            return Ok(new { status = "Owner" });
+        }
+        return Ok(new { status = "Not Owner" });
     }
-    return Ok(new { status = "Not Owner"});
+    [HttpPut("update-event/{eventId}")]
+    [Authorize(Roles = "User")]
+    public async Task<IActionResult> UpdateEvent([FromBody] EventRequest eventRequest, Guid eventId)
+    {
+        if (eventRequest == null)
+        {
+            return BadRequest("Request can't be empty");
+        }
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdClaim, out var userGuid))
+        {
+            return Unauthorized("Invalid or missing User ID in token.");
+        }
+        var existingEvent = await _dbContext.Events.FirstOrDefaultAsync(e => e.Id == eventId);
+        if (existingEvent == null)
+        {
+            return BadRequest("Not found");
+        }
+        eventRequest.CreatorId = userGuid;
+        eventRequest.Adapt(existingEvent);
+        _dbContext.Events.Update(existingEvent);
+        await _dbContext.SaveChangesAsync();
+        return Ok(new { status = "Saved"});
     }
+
 }

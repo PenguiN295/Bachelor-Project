@@ -8,10 +8,8 @@ const Mainbar : React.FC = () =>
     return (
     <Navbar collapseOnSelect expand="lg" bg="light" variant="light">
       <Container fluid>
-        
           <HomeButton />
-       
-
+         
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         
         <Navbar.Collapse id="responsive-navbar-nav">

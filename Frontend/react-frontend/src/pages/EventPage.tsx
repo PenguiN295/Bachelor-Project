@@ -2,57 +2,31 @@ import { useParams } from "react-router-dom";
 import { useEvent } from "../hooks/useEvent";
 import LoadingState from "../components/LoadingState";
 import EventComponent from "../components/EventComponent";
-import { useEffect, useState } from "react";
-import url from "../../config";
-import { useAuth } from "../context/AuthContext";
 import SubscribeComponent from "../components/SubscribeComponent";
 
 const EventPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
-    const { token } = useAuth();
-    const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
-    const { event, loading, refreshEvent } = useEvent(id!);
-    const handleStatus = async () => {
-        try {
-            if (event) {
-                const response = await fetch(`${url}/subscribed-status/${event.id}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                })
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.status === 'Subscribed') {
-                        setIsSubscribed(true);
-                    }
-                    else {
-                        setIsSubscribed(false);
-                    }
-                }
-            }
-        }
-        catch (err) {
-            console.log(err);
-        }
+    const { event, loading, isOwner, isSubscribed, updateEvent, error } = useEvent(id!);
 
-    }
-    useEffect(() => {
-        handleStatus();
-    }, [event])
-
-    const handleRefresh = async () => {
-        await refreshEvent();
-        await handleStatus();
-    };
+    if (loading) return <div className="vh-100 d-flex justify-content-center align-items-center"><LoadingState /></div>;
+    if (error || !event) return <div className="vh-100 d-flex justify-content-center align-items-center">Something went wrong</div>;
     return <>
         <div className=" d-flex justify-content-center align-items-center vh-100">
             {loading ? (
                 <LoadingState />
-            ) : event ? (<div><EventComponent event={event}/> <SubscribeComponent event={event} isSubscribed={isSubscribed} onStatusChange={handleRefresh} /></div> ) :
+            ) : event ? (
+                isOwner ? (<EventComponent event={event} isEditable={true} onSave={updateEvent} />) : (
+                    <div>
+                        <EventComponent event={event} />
+                        <SubscribeComponent event={event} isSubscribed={isSubscribed}
+                        />
+                    </div>
+                )
+            ) :
                 <>Something went wrong</>}
         </div>
+
+
     </>
 }
 export default EventPage;

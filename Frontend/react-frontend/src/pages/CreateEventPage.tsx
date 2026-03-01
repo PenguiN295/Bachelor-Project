@@ -2,12 +2,11 @@ import React from "react"
 
 import { type ChangeEvent, useState } from "react";
 import type Event from '../Interfaces/Event'
-import url from "../../config";
 import { useNavigate } from "react-router-dom";
+import { useCreateEvent } from "../hooks/useCreateEvent";
 
 const CreateEventPage: React.FC = () => {
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const { mutate, isPending, error } = useCreateEvent();
     const navigate = useNavigate();
     const [file, setFile] = useState<File | null>(null);
     const [formData, setFormData] = useState<Event>({
@@ -16,6 +15,8 @@ const CreateEventPage: React.FC = () => {
         description: '',
         startDate: '',
         endDate: '',
+        startTime: '',
+        endTime: '',
         maxAttendees: 0,
         currentAttendees: 0,
         price: 0,
@@ -36,48 +37,25 @@ const CreateEventPage: React.FC = () => {
             setFile(e.target.files[0]);
         }
     };
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setLoading(true);
-        setError(null);
+        
+        const data = new FormData();
+        Object.entries(formData).forEach(([key, value]) => {
+            data.append(key, value?.toString() ?? '');
+        });
 
-        try {
-            const token = localStorage.getItem('token');
-            const data = new FormData();
-            data.append('Title', formData.title);
-            data.append('Description', formData.description);
-            data.append('StartDate', new Date(formData.startDate).toISOString());
-            data.append('EndDate', new Date(formData.endDate).toISOString());
-            data.append('MaxAttendees', formData.maxAttendees.toString());
-            data.append('Price', formData.price.toString());
-            data.append('Location', formData.location);
-            if (file) {
-                data.append('ImageFile', file);
-            }
-            const response = await fetch(`${url}/create-event`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                body: data
-            })
-            if (!response.ok) {
-                throw new Error("Failed to create Event");
-            }
-            navigate('/dashboard');
+        if (file) data.append('ImageFile', file);
 
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Event creation failed');
-        }
-        finally {
-            setLoading(false)
-        }
+        mutate(data, {
+            onSuccess: () => navigate('/dashboard')
+        });
     };
     return (<>
         <div className="container d-flex justify-content-center align-items-center vh-100">
             <div className="card shadow-sm p-4" style={{ width: '100%', maxWidth: '600px' }}>
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '500px' }}>
-                    {error && <div className="alert alert-danger py-2">{error}</div>}
+                    {error && <div className="alert alert-danger py-2">{error.message}</div>}
                     <h2>Create New Event</h2>
 
                     <div>
@@ -93,11 +71,24 @@ const CreateEventPage: React.FC = () => {
                     <div style={{ display: 'flex', gap: '10px' }}>
                         <div>
                             <label>Start Date</label>
-                            <input type="datetime-local" name="startDate" value={formData.startDate} onChange={handleChange} />
+                            <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} />
                         </div>
                         <div>
                             <label>End Date</label>
-                            <input type="datetime-local" name="endDate" value={formData.endDate} onChange={handleChange} />
+                            <input type="date" name="endDate" value={formData.endDate} onChange={handleChange} />
+                        </div>
+                    </div>
+
+
+
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <div>
+                            <label>Start Time</label>
+                            <input type="time" name="startTime" value={formData.startTime} onChange={handleChange} />
+                        </div>
+                        <div>
+                            <label>End Time</label>
+                            <input type="time" name="endTime" value={formData.endTime} onChange={handleChange} />
                         </div>
                     </div>
 
@@ -129,14 +120,14 @@ const CreateEventPage: React.FC = () => {
 
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={isPending}
                         style={{
                             padding: '10px',
-                            cursor: loading ? 'not-allowed' : 'pointer',
-                            opacity: loading ? 0.7 : 1
+                            cursor: isPending ? 'not-allowed' : 'pointer',
+                            opacity: isPending ? 0.7 : 1
                         }}
                     >
-                        {loading ? 'Creating...' : 'Save Event'}
+                        {isPending ? 'Creating...' : 'Save Event'}
                     </button>
                 </form>
             </div>

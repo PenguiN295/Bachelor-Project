@@ -13,13 +13,13 @@ import CreateEventPage from './pages/CreateEventPage';
 import EventPage from './pages/EventPage';
 import OwnEventsPage from './pages/OwnEventsPage';
 import Layout from './components/Layout';
-//import ResourceOwnerRoute from './components/ResourceOwnerRoute';
-import EditEventPage from './pages/EditEventPage';
-import ResourceOwnerRoute from './components/ResourceOwnerRoute';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
+const queryClient = new QueryClient();
 const App: React.FC = () => {
   return (
     <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
@@ -32,9 +32,6 @@ const App: React.FC = () => {
               <Route path="/ChangePage/:modifyUser" element={<ChangePage />} />
               <Route path="/CreateEvent" element={<CreateEventPage />} />
               <Route path="/Event/:id" element={<EventPage />} />
-              <Route element = {<ResourceOwnerRoute/>}>
-              <Route path="/Event/:id/edit" element={<EditEventPage />} />
-              </Route>
               <Route path="/own-events" element={<OwnEventsPage />} />
             </Route>
           </Route>
@@ -45,6 +42,7 @@ const App: React.FC = () => {
         </Routes>
 
       </AuthProvider>
+      </QueryClientProvider>
     </BrowserRouter>
   );
 };

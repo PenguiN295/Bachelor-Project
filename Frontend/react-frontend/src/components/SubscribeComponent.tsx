@@ -1,69 +1,56 @@
-import { useState } from "react";
+
 import type Event from "../Interfaces/Event"
 import { useAuth } from "../context/AuthContext";
 import url from "../../config";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface SubscribeProp {
     isSubscribed: boolean,
     event: Event,
-    onStatusChange: () => void
 }
 
 const SubscribeComponent: React.FC<SubscribeProp> = ({ isSubscribed, event: { id,
     maxAttendees,
     currentAttendees,
-},onStatusChange}) => {
-
-    const [loading, setLoading] = useState<boolean>(false);
+} }) => {
     const { token } = useAuth();
-    const handleSubscribe = async (intent: boolean) => {
-        try {
-            setLoading(true);
-            const response = await fetch(`${url}/subscribe`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    Subscribe: intent,
-                    EventId: id
-                })
-            })
-            if (!response.ok) {
-                alert("Already Subscribed to this event");
-            }
-            else {
-                !isSubscribed ? (alert("Subscribed successfully")) : (alert("Unsubscribed successfully"))
-                onStatusChange();
-            }
-        }
-        catch (err) {
-            console.error(err);
-        }
-        finally {
-            setLoading(false);
-        }
+    const queryClient = useQueryClient();
 
-    }
+    const { mutate, isPending } = useMutation({
+        mutationFn: async (intent: boolean) => {
+            const response = await fetch(`${url}/subscribe`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ Subscribe: intent, EventId: id }),
+            });
+
+            if (!response.ok) throw new Error("Subscription request failed");
+            return response.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["events"] });
+            alert(isSubscribed ? "Unsubscribed successfully" : "Subscribed successfully");
+        },
+        onError: (error) => {
+            console.error(error);
+            alert("Action failed. You may already be subscribed or the server is unreachable.");
+        },
+    });
+
+    const isFull = currentAttendees >= maxAttendees;
 
     return <>
 
-        {isSubscribed ? (<button
-            className="btn btn-danger w-100 fw-semibold"
-            disabled={currentAttendees >= maxAttendees || loading == true}
-            onClick={() => handleSubscribe(false)}>
-            Unsubscribe
-
-        </button>) : (
-            <button
-                className="btn btn-primary w-100 fw-semibold"
-                disabled={currentAttendees >= maxAttendees || loading == true}
-                onClick={() => handleSubscribe(true)}>
-                {currentAttendees >= maxAttendees ? 'Sold Out' : 'Register Now'}
-
-            </button>)
-        }
+        <button
+            className={`btn ${isSubscribed ? "btn-danger" : "btn-primary"} w-100 fw-semibold`}
+            disabled={isPending || (!isSubscribed && isFull)}
+            onClick={() => mutate(!isSubscribed)}
+        >
+            {isPending ? "Processing..." : isSubscribed ? "Unsubscribe" : isFull ? "Sold Out" : "Register Now"}
+        </button>
 
     </>
 }

@@ -1,67 +1,51 @@
-import { useState, useEffect } from 'react';
-import { type EventFilter } from '../Interfaces/EventFilter'
+import { useState } from 'react';
+import { useQuery } from "@tanstack/react-query";
+import { type EventFilter } from '../Interfaces/EventFilter';
 import url from '../../config';
 import { useDebounce } from './useDebounce';
 import type Event from '../Interfaces/Event';
-
+import { useAuth } from "../context/AuthContext";
 
 const defaultFilters: EventFilter = {
-        page: 1,
-        search: '',
-        showFull: false,
-        price: 0, 
-        location: ''
+    page: 1,
+    search: '',
+    showFull: false,
+    price: 0,
+    location: ''
 };
+
 export const useEvents = (initialFilters: Partial<EventFilter> = {}) => {
-    const [loading, setLoading] = useState(true);
-    const [events, setEvents] = useState<Event[]>([]);
+    const { token } = useAuth();
     const [filters, setFilters] = useState<EventFilter>({
         ...defaultFilters,
         ...initialFilters
     });
-    
-    const debouncedFilters = useDebounce(filters, 500);
-    
+    const debouncedSearch = useDebounce(filters.search, 500);
+    const debouncedLocation = useDebounce(filters.location, 500);
 
-    useEffect(() => {
-        const fetchEvents = async () => {
-            setLoading(true);
-            try {
-                const token = localStorage.getItem('token');
-                const queryParams = new URLSearchParams();
-
-                Object.entries(debouncedFilters).forEach(([key, value]) => {
-                    if (value !== undefined && value !== null && value !== '') {
-                        queryParams.append(key, value.toString());
-                    }
-                });
-
-                const response = await fetch(`${url}/events?${queryParams}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    setEvents(data);
+    const { data: events = [], isLoading } = useQuery({
+        queryKey: ["events", { ...filters, search: debouncedSearch, location: debouncedLocation }],
+        queryFn: async (): Promise<Event[]> => {
+            const queryParams = new URLSearchParams();
+            Object.entries({ ...filters, search: debouncedSearch, location: debouncedLocation }).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && value !== '') {
+                    queryParams.append(key, value.toString());
                 }
-            } catch (err) {
-                console.error("Failed to fetch events:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
+            });
 
-        fetchEvents();
-    }, [debouncedFilters]);
+            const response = await fetch(`${url}/events?${queryParams}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!response.ok) throw new Error("Failed to fetch events");
+            return response.json();
+        },
+        enabled: !!token,
+    });
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
-        const finalValue = type === 'checkbox'
-            ? (e.target as HTMLInputElement).checked
+        const finalValue = type === 'checkbox' 
+            ? (e.target as HTMLInputElement).checked 
             : value;
 
         setFilters(prev => ({
@@ -70,11 +54,14 @@ export const useEvents = (initialFilters: Partial<EventFilter> = {}) => {
             page: 1
         }));
     };
-    const handleFilterClear = () =>
-    {
-        setFilters(defaultFilters)
-    }
 
+    const handleFilterClear = () => setFilters(defaultFilters);
 
-    return { events, loading, filters, setFilters, handleFilterChange, handleFilterClear };
+    return { 
+        events, 
+        loading: isLoading, 
+        filters, 
+        handleFilterChange, 
+        handleFilterClear 
+    };
 };

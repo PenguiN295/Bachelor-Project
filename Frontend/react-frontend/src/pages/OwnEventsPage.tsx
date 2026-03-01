@@ -1,6 +1,5 @@
 import { CreateEventButton } from "../components/CreateEventButton";
 import EventCardList from "../components/EventCardList";
-import HomeButton from "../components/HomeButton";
 import LoadingState from "../components/LoadingState";
 import { useEvents } from "../hooks/useEvents"
 
@@ -16,7 +15,6 @@ const OwnEventsPage: React.FC = () => {
                 <LoadingState />
             ) : events.length > 0 ? (<>
                 <EventCardList events={events} /></>)
-
                 : <> 
                 
                 <div> You haven't created any events. Make One!

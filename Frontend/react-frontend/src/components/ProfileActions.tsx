@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import url from '../../config';
 import { useAuth } from '../context/AuthContext';
@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 const ProfileActions: React.FC<{ modifyUser: 'username' | 'password' }> = ({ modifyUser }) => {
     const { updateUser, token } = useAuth();
     const navigate = useNavigate();
-
+    const queryClient = useQueryClient();
     const [formData, setFormData] = useState({
         username: '',
         password: '',
@@ -32,6 +32,7 @@ const ProfileActions: React.FC<{ modifyUser: 'username' | 'password' }> = ({ mod
             if (modifyUser === 'username' && formData.username.trim() !== '') {
                 updateUser(formData.username);
             }
+            queryClient.invalidateQueries({queryKey:["userInfo"]})
             navigate('/dashboard');
         },
         onError: (error) => {

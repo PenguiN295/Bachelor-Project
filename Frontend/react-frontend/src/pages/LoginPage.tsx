@@ -1,57 +1,26 @@
 import React, { useState, type ChangeEvent} from 'react';
-import { useNavigate } from 'react-router-dom';
-import url from '../../config';
-import { useAuth } from '../context/AuthContext';
+import { useLogin } from '../hooks/useLogin';
+
 
 const LoginPage: React.FC = () => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const {login: authLogin} = useAuth();
+  const {error,login,loading } = useLogin();
   
-  const navigate = useNavigate();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
     setCredentials(prev => ({ ...prev, [name]: value }));
   };
- const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`${url}/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          Email: credentials.email,
-          Password: credentials.password
-        })
-      });
-
-      if (!response.ok) {
-        setCredentials(prev => ({ ...prev, password: '' }));
-        throw new Error('Invalid credentials');
-      }
-
-      const data = await response.json();
-      authLogin(data.token);
-      navigate('/dashboard');
-      
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault(); 
+    login(credentials);
+  }
   return (
     <div className="container d-flex justify-content-center align-items-center vh-100">
       <div className="card shadow-sm p-4" style={{ width: '100%', maxWidth: '400px' }}>
         <h2 className="text-center mb-4">Login</h2>
         
-        {error && <div className="alert alert-danger py-2">{error}</div>}
+        {error && <div className="alert alert-danger py-2">{error.message}</div>}
         
         <form onSubmit={handleSubmit}>
           <div className="mb-3">

@@ -31,10 +31,6 @@ public class AuthController : ControllerBase
         {
             return BadRequest("Email already in use");
         }
-        if(_dbContext.Users.Any(u => u.Username == request.Username))
-        {
-            return BadRequest("Username already in use");
-        }
         var user = new User
         {
             Id = Guid.NewGuid(),
@@ -45,7 +41,6 @@ public class AuthController : ControllerBase
         };
 
         var token = _tokenService.GenerateToken(user);
-        Console.WriteLine("User registered: " + user.Username);
         await _dbContext.Users.AddAsync(user);
         await _dbContext.SaveChangesAsync();
         return Ok(new { token });

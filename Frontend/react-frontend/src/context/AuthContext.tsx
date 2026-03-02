@@ -16,14 +16,14 @@ interface AuthContextType {
 }
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+    const [token, setToken] = useState<string | null>(localStorage.getItem('token')) || null;
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
-    const {data : username = '', isLoading} = useQuery({
-          queryKey: ["userInfo", token],
-          queryFn: async (): Promise<string> => {
-             const response = await fetch(`${url}/user-info`, {
+    const { data: username = '', isLoading } = useQuery({
+        queryKey: ["userInfo", token],
+        queryFn: async (): Promise<string> => {
+            const response = await fetch(`${url}/user-info`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -33,14 +33,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (!response.ok) throw new Error('Failed to fetch user info');
             const data = await response.json();
             return data.username;
-            
-    },
-        enabled:  !!token,
+
+        },
+        enabled: !!token,
+        retry: false,
     }
     )
-    
 
-    const login = (newToken: string) => {
+
+    const login = async (newToken: string) => {
         localStorage.setItem('token', newToken);
         setToken(newToken);
     };
@@ -48,7 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const logout = () => {
         localStorage.clear();
         setToken(null);
-        queryClient.clear(); 
+        queryClient.clear();
         navigate('/login');
     };
     const register = (newToken: string) => {
@@ -59,7 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         queryClient.setQueryData(["userInfo", token], newUsername);
     };
     return (
-        <AuthContext.Provider value={{ username, token, login, logout, register, loading : isLoading, updateUser }}>
+        <AuthContext.Provider value={{ username, token, login, logout, register, loading: isLoading, updateUser }}>
             {children}
         </AuthContext.Provider>
     );

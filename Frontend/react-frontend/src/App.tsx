@@ -13,6 +13,7 @@ import CreateEventPage from './pages/CreateEventPage';
 import EventPage from './pages/EventPage';
 import OwnEventsPage from './pages/OwnEventsPage';
 import Layout from './components/Layout';
+import 'leaflet/dist/leaflet.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient();

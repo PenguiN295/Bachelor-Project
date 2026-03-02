@@ -39,6 +39,7 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete
         <div className="card shadow-sm border-0" style={{ maxWidth: '400px' }}>
             <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center mb-2">
+                    
                     {isEditing ? (
                         <input 
                             className="form-control form-control-sm fw-bold me-2" 
@@ -112,7 +113,10 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete
                         {isEditing ? (
                             <input name="location" className="form-control form-control-sm" value={tempEvent.location} onChange={handleInputChange} />
                         ) : (
-                            <span className="small">{event.location}</span>
+                            <span className="small">{event.location}
+                            </span>
+
+                            
                         )}
                     </div>
 
@@ -145,7 +149,6 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete
                         )}
                     </div>
                 )}
-
             </div>
         </div>
     );

@@ -32,7 +32,7 @@ const ProfileActions: React.FC<{ modifyUser: 'username' | 'password' }> = ({ mod
             if (modifyUser === 'username' && formData.username.trim() !== '') {
                 updateUser(formData.username);
             }
-            queryClient.invalidateQueries({queryKey:["userInfo"]})
+            queryClient.invalidateQueries({ queryKey: ["userInfo"] })
             navigate('/dashboard');
         },
         onError: (error) => {
@@ -56,7 +56,14 @@ const ProfileActions: React.FC<{ modifyUser: 'username' | 'password' }> = ({ mod
 
         const payload: any = {};
         if (modifyUser === 'username') payload.Username = formData.username;
-        if (modifyUser === 'password') payload.Password = formData.password;
+        if (modifyUser === 'password') {
+            payload.Password = formData.password;
+            if (formData.password !== formData.confirmPassword) {
+                alert("Passwords do not match");
+                return;
+            }
+        }
+
 
         mutation.mutate(payload);
     };

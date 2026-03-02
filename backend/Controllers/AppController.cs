@@ -91,7 +91,7 @@ public class AppController : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(filter.Search))
         {
-            query = query.Where(e => EF.Functions.Like(e.Title, $"%{filter.Search}%"));
+            query = query.Where(e => EF.Functions.ILike(e.Title, $"%{filter.Search}%"));
         }
 
         if (filter.StartDate != default)
@@ -105,7 +105,7 @@ public class AppController : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(filter.Location))
         {
-            query = query.Where(e => EF.Functions.Like(e.Location,$"%{filter.Location}%"));
+            query = query.Where(e => EF.Functions.ILike(e.Location,$"%{filter.Location}%"));
         }
         if (filter.ShowFull == false)
         {

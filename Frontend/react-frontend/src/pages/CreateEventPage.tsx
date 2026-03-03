@@ -10,6 +10,7 @@ const CreateEventPage: React.FC = () => {
     const { createEvent, isPending, error } = useCreateEvent();
     const navigate = useNavigate();
     const [file, setFile] = useState<File | null>(null);
+
     const [formData, setFormData] = useState<Event>({
         id: '',
         title: '',
@@ -19,16 +20,27 @@ const CreateEventPage: React.FC = () => {
         maxAttendees: 0,
         currentAttendees: 0,
         price: 0,
-        location: '',
+        latitude: 0,
+        longitude: 0,
+        city: '',
+        county: '',
         imageUrl: '',
     });
-
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
         const { name, value, type } = e.target;
 
         setFormData(prev => ({
             ...prev,
             [name]: type === 'number' ? parseFloat(value) || 0 : value
+        }));
+    };
+    const handlePositionChange = (pos: { lat: number; lng: number; city?: string; county?: string }): void => {
+        setFormData(prev => ({
+            ...prev,
+            latitude: pos.lat,
+            longitude: pos.lng,
+            city: pos.city ?? prev.city,
+            county: pos.county ?? prev.county
         }));
     };
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,12 +50,11 @@ const CreateEventPage: React.FC = () => {
     };
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        
+
         const data = new FormData();
         Object.entries(formData).forEach(([key, value]) => {
             data.append(key, value?.toString() ?? '');
         });
-
         if (file) data.append('ImageFile', file);
 
         createEvent(data, {
@@ -61,7 +72,7 @@ const CreateEventPage: React.FC = () => {
                         <label>Title</label>
                         <input type="text" name="title" value={formData.title} onChange={handleChange} required />
                     </div>
-            
+
                     <div>
                         <label>Description</label>
                         <textarea name="description" value={formData.description} onChange={handleChange} />
@@ -91,7 +102,7 @@ const CreateEventPage: React.FC = () => {
 
                     <div>
                         <label>Location</label>
-                        <input type="text" name="location" value={formData.location} onChange={handleChange} />
+                        <MapComponent position={{ lat: formData.latitude, lng: formData.longitude }} readOnly={false} onPositionChange={handlePositionChange} />
                     </div>
 
                     <div className="mb-3">
@@ -115,7 +126,6 @@ const CreateEventPage: React.FC = () => {
                     >
                         {isPending ? 'Creating...' : 'Save Event'}
                     </button>
-                    <MapComponent/>
                 </form>
             </div>
         </div>

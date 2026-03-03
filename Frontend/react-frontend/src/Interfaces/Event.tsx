@@ -7,6 +7,9 @@ export default interface Event {
   maxAttendees: number;
   currentAttendees: number;
   price: number;
-  location: string;
+  latitude: number;
+  longitude: number;
+  city: string;
+  county: string;
   imageUrl: string;
 }

@@ -2,10 +2,10 @@
 import { useQuery } from '@tanstack/react-query';
 
 
-export const useMapData  = (id:string ,position: {lat : number, lng : number}, ) => {
+export const useMapData  = (position: {lat : number, lng : number}, ) => {
 
   const adressQuery  =  useQuery( {
-    queryKey : ["mapLocation",id, position.lat, position.lng],
+    queryKey : ["mapLocation",position.lat, position.lng],
     queryFn : async () =>{ 
       const response = await fetch(
         `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.lat}&longitude=${position.lng}&localityLanguage=en`

@@ -9,7 +9,11 @@ public class Event
     public int MaxAttendees { get; set; }
     public int CurrentAttendees { get; set; }
     public int Price { get; set; }
-    public string Location { get; set; } = null!;
+    public double Latitude { get; set; }
+    public double Longitude { get; set; }
+    public string City { get; set; } = null!;
+    public string County { get; set; } = null!;
+
     public string? ImageUrl { get; set; }
     public Guid CreatorId { get; set; }
 

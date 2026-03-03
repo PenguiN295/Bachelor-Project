@@ -54,7 +54,10 @@ public class AppController : ControllerBase
             MaxAttendees = newEvent.MaxAttendees,
             CurrentAttendees = 0,
             Price = newEvent.Price,
-            Location = newEvent.Location,
+            Latitude = newEvent.Latitude,
+            Longitude = newEvent.Longitude,
+            City = newEvent.City,
+            County = newEvent.County,
             CreatorId = userGuid,
             ImageUrl = imageUrl
         };
@@ -105,7 +108,7 @@ public class AppController : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(filter.Location))
         {
-            query = query.Where(e => EF.Functions.ILike(e.Location,$"%{filter.Location}%"));
+            query = query.Where(e => EF.Functions.ILike(e.City,$"%{filter.Location}%") || EF.Functions.ILike(e.County, $"%{filter.Location}%"));
         }
         if (filter.ShowFull == false)
         {

@@ -3,16 +3,26 @@ import LocationMarker from "./LocationMarker";
 import { useMapData } from "../hooks/useMapData";
 import LoadingState from "./LoadingState";
 import { MapPicker } from "./MapPicker";
+import { useEffect } from "react";
 
 interface MapProps {
-    id: string;
     position: { lat: number, lng: number };
     readOnly?: boolean;
-    onPositionChange?: (pos: { lat: number; lng: number }) => void;
+    onPositionChange?: (pos: { lat: number; lng: number, city: string, county: string }, ) => void;
 }
 
-const MapComponent: React.FC<MapProps> = ({ id, position,readOnly,onPositionChange }) => {
-    const { getAdress: addressData, isLoading } = useMapData(id, position);
+const MapComponent: React.FC<MapProps> = ({ position,readOnly,onPositionChange }) => {
+    const { getAdress: addressData, isLoading } = useMapData(position);
+    useEffect(() => {
+        if (addressData && onPositionChange) {
+            onPositionChange({
+                lat: position.lat,
+                lng: position.lng,
+                city: addressData.city,
+                county: addressData.county || addressData.principalSubdivision
+            });
+        }
+    }, [addressData]);
 
     return (
         <div>

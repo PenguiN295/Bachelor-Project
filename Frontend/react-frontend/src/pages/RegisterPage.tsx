@@ -1,5 +1,6 @@
 import React, { useState, type ChangeEvent} from 'react';
 import { useRegister } from '../hooks/useRegister';
+import { toast } from 'sonner';
 
 const RegisterPage: React.FC = () => {
     const [credentials, setCredentials] = useState({ username: '',email: '', password: '', confirmPassword: '' });
@@ -12,7 +13,10 @@ const RegisterPage: React.FC = () => {
     {
         e.preventDefault();
         if (credentials.password !== credentials.confirmPassword) {
-        alert("Passwords do not match"); 
+            toast.error("Passwords do not match");
+        if(credentials.password.length < 6) {
+            toast.error("Password must be at least 6 characters long");
+        }
         return;
     }
         register(credentials);

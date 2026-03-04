@@ -33,7 +33,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
                     <h5 className="card-title">{event.title}</h5>
                     <p className="card-text mb-1">
                         <i className="bi bi-geo-alt me-1"></i>
-                        {event.location}
+                        {event.city}, {event.county}
                     </p>
                     <p className="card-text text-muted small">
                         <i className="bi bi-calendar-event me-1"></i>

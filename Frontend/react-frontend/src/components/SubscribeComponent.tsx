@@ -3,6 +3,7 @@ import type Event from "../Interfaces/Event"
 import { useAuth } from "../context/AuthContext";
 import url from "../../config";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface SubscribeProp {
     isSubscribed: boolean,
@@ -16,7 +17,7 @@ const SubscribeComponent: React.FC<SubscribeProp> = ({ isSubscribed, event: { id
     const { token } = useAuth();
     const queryClient = useQueryClient();
 
-    const { mutate, isPending } = useMutation({
+    const { mutate } = useMutation({
         mutationFn: async (intent: boolean) => {
             const response = await fetch(`${url}/subscribe`, {
                 method: "POST",
@@ -30,26 +31,38 @@ const SubscribeComponent: React.FC<SubscribeProp> = ({ isSubscribed, event: { id
             if (!response.ok) throw new Error("Subscription request failed");
             return response.json();
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["events"] });
-            alert(isSubscribed ? "Unsubscribed successfully" : "Subscribed successfully");
+        onMutate: async (intent: boolean) => {
+            await queryClient.cancelQueries({ queryKey: ["subscription", id] });
+            const previousSubscription = queryClient.getQueryData(["subscription", id]);
+            queryClient.setQueryData(["subscription", id], intent);
+            toast.loading(intent ? "Subscribing..." : "Unsubscribing...", { id: "sub-action" });
+
+            return { previousSubscription };
         },
-        onError: (error) => {
-            console.error(error);
-            alert("Action failed. You may already be subscribed or the server is unreachable.");
+        onSuccess: (_, intent) => {
+            toast.success(intent ? "Subscribed successfully" : "Unsubscribed successfully", {
+                id: "sub-action"
+            });
         },
+        onError: (_error, _intent, context) => {
+            queryClient.setQueryData(["subscription", id], context?.previousSubscription);
+            toast.error("Action failed. Reverting changes.", { id: "sub-action" });
+        },
+        onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: ["subscription", id] });
+    },
     });
 
     const isFull = currentAttendees >= maxAttendees;
 
     return <>
 
-        <button
+       <button
             className={`btn ${isSubscribed ? "btn-danger" : "btn-primary"} w-100 fw-semibold`}
-            disabled={isPending || (!isSubscribed && isFull)}
+            disabled={!isSubscribed && isFull} 
             onClick={() => mutate(!isSubscribed)}
         >
-            {isPending ? "Processing..." : isSubscribed ? "Unsubscribe" : isFull ? "Sold Out" : "Register Now"}
+            {isSubscribed ? "Unsubscribe" : isFull ? "Sold Out" : "Register Now"}
         </button>
 
     </>

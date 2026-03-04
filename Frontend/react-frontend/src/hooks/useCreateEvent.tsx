@@ -23,7 +23,6 @@ import { useAuth } from "../context/AuthContext";
             return response.json();
         },
         onSuccess: () => {
-
             queryClient.invalidateQueries({ queryKey: ["events"] });
         }
     });

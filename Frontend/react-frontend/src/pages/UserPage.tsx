@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 const UserPage: React.FC = () => {
     const navigate = useNavigate();
-    const onChanceClick = (where: string) =>
+    const onChangeClick = (where: string) =>
     {
         if(where === 'username')
             navigate('/ChangePage/username');
@@ -14,11 +14,11 @@ const UserPage: React.FC = () => {
     return (
         <>
             <div>
-                <button className="btn btn-outline-secondary mb-3 ms-2" onClick={() => onChanceClick('username')}>
+                <button className="btn btn-outline-secondary mb-3 ms-2" onClick={() => onChangeClick('username')}>
                     <i className="bi bi-pencil"></i>
                     Change Username
                 </button>
-                <button className="btn btn-outline-secondary mb-3 ms-2" onClick={() => onChanceClick('password')}>
+                <button className="btn btn-outline-secondary mb-3 ms-2" onClick={() => onChangeClick('password')}>
                     <i className="bi bi-pencil"></i>
                     Change Password
                 </button> 

@@ -5,6 +5,7 @@ import type Event from '../Interfaces/Event'
 import { useNavigate } from "react-router-dom";
 import { useCreateEvent } from "../hooks/useCreateEvent";
 import MapComponent from "../components/MapComponent";
+import { toast } from "sonner";
 
 const CreateEventPage: React.FC = () => {
     const { createEvent, isPending, error } = useCreateEvent();
@@ -58,7 +59,12 @@ const CreateEventPage: React.FC = () => {
         if (file) data.append('ImageFile', file);
 
         createEvent(data, {
-            onSuccess: () => navigate('/dashboard')
+            onSuccess: () => {
+                toast.success("Event created successfully");
+                navigate('/dashboard');
+            },
+            onError: () => {toast.error("Failed to create event. Please try again.");
+            }
         });
     };
     return (<>

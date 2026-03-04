@@ -2,6 +2,7 @@
 import { useState } from "react";
 import type Event from "../Interfaces/Event"
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export interface EventProp {
     event: Event;  
@@ -14,6 +15,7 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const [tempEvent, setTempEvent] = useState<Event>(event);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -25,130 +27,150 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete
         setIsEditing(false);
     };
     const handleDelete = () =>{
+        setShowDeleteConfirm(true);
+    };
+
+    const confirmDelete = () => {
+        setShowDeleteConfirm(false);
         setIsEditing(false);
+        toast.success("Event deleted successfully");
         onDelete?.();
         navigate("/dashboard");
-    }
+    };
+
+    const cancelDelete = () => {
+        setShowDeleteConfirm(false);
+    };
 
     const handleCancel = () => {
         setTempEvent({ ...event }); 
         setIsEditing(false);
         
     };
-    return (
-        <div className="card shadow-sm border-0" style={{ maxWidth: '400px' }}>
-            <div className="card-body">
-                <div className="d-flex justify-content-between align-items-center mb-2">
-                    
+    const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
+};
+   return (
+        <div className="container py-5">
+            <div className="d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
+                <div className="flex-grow-1 me-4">
                     {isEditing ? (
                         <input 
-                            className="form-control form-control-sm fw-bold me-2" 
+                            className="form-control form-control-lg fw-bold mb-2" 
                             name="title" 
                             value={tempEvent.title} 
                             onChange={handleInputChange} 
                         />
                     ) : (
-                        <h5 className="card-title fw-bold mb-0 text-truncate" title={event.title}>
-                            {event.title}
-                        </h5>
+                        <h1 className="display-5 fw-bold text-dark">{event.title}</h1>
                     )}
-                    
-                    {isEditing ? (
-                        <div className="input-group input-group-sm" style={{ width: '100px' }}>
-                            <span className="input-group-text">$</span>
-                            <input 
-                                type="number" 
-                                name="price" 
-                                className="form-control" 
-                                value={tempEvent.price} 
-                                onChange={handleInputChange} 
-                            />
-                        </div>
-                    ) : (
-                        <span className="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
-                            ${event.price.toFixed(2)}
-                        </span>
-                    )}
-                </div>
-
-                {isEditing ? (
-                    <textarea 
-                        className="form-control form-control-sm mb-4" 
-                        name="description" 
-                        rows={2} 
-                        value={tempEvent.description} 
-                        onChange={handleInputChange} 
-                    />
-                ) : (
-                    <p className="card-text text-muted small mb-4" style={{ minHeight: '3rem' }}>
-                        {event.description}
-                    </p>
-                )}
-
-                <div className="row g-2 mb-4">
-                    <div className="col-6">
-                        <div className="p-2 border-start border-primary border-4 bg-light rounded-end">
-                            <label className="d-block text-uppercase text-muted fw-bold" style={{ fontSize: '0.65rem' }}>Start Date</label>
-                            {isEditing ? (
-                                <input type="datetime-local" name="startAt" className="form-control form-control-sm border-0 bg-transparent p-0" value={tempEvent.startAt} onChange={handleInputChange} />
-                            ) : (
-                                <span className="small fw-medium">{event.startAt}</span>
-                            )}
-                        </div>
-                    </div>
-                    <div className="col-6">
-                        <div className="p-2 border-start border-secondary border-4 bg-light rounded-end">
-                            <label className="d-block text-uppercase text-muted fw-bold" style={{ fontSize: '0.65rem' }}>End Date</label>
-                            {isEditing ? (
-                                <input type="datetime-local" name="endAt" className="form-control form-control-sm border-0 bg-transparent p-0" value={tempEvent.endAt} onChange={handleInputChange} />
-                            ) : (
-                                <span className="small fw-medium">{event.endAt}</span>
-                            )}
-                        </div>
-                    </div>
-                </div>
-                <div className="mb-3">
-                    <div className="d-flex align-items-center mb-3 text-secondary">
-                        <i className="bi bi-geo-alt-fill me-2"></i>
-                        {isEditing ? (
-                            <input name="location" className="form-control form-control-sm" value={tempEvent.location} onChange={handleInputChange} />
-                        ) : (
-                            <span className="small">{event.location}
-                            </span>
-
-                            
-                        )}
-                    </div>
-
-                    <div className="d-flex justify-content-between align-items-center mb-1">
-                        <span className="small fw-bold text-dark">Registration</span>
+                    <div className="d-flex align-items-center text-muted">
+                        <i className="bi bi-people me-2"></i>
                         {isEditing ? (
                             <div className="d-flex align-items-center">
-                                <span className="small text-muted me-1">{event.currentAttendees} / </span>
-                                <input type="number" name="maxAttendees" className="form-control form-control-sm" style={{ width: '70px' }} value={tempEvent.maxAttendees} onChange={handleInputChange} />
+                                <span>{event.currentAttendees} / </span>
+                                <input type="number" name="maxAttendees" className="form-control form-control-sm ms-2" style={{ width: '80px' }} value={tempEvent.maxAttendees} onChange={handleInputChange} />
                             </div>
                         ) : (
-                            <span className="small text-muted">
-                                {event.currentAttendees} / {event.maxAttendees}
-                            </span>
+                            <span className="lead">{event.currentAttendees} / {event.maxAttendees} Attendees Registered</span>
                         )}
                     </div>
                 </div>
-                {isEditable && (
-                    <div className="border-top pt-3 d-flex justify-content-end gap-2">
+
+                <div className="text-end">
+                    {isEditing ? (
+                        <div className="input-group input-group-lg mb-3">
+                            <span className="input-group-text">$</span>
+                            <input type="number" name="price" className="form-control" value={tempEvent.price} onChange={handleInputChange} />
+                        </div>
+                    ) : (
+                        <div className="badge bg-primary p-3 fs-4 shadow-sm mb-3">
+                           {event.price === 0 ? "Free" : `$${event.price.toFixed(2)}`}
+                        </div>
+                    )}
+                    
+                    {isEditable && (
+                        <div className="d-flex gap-2 justify-content-end">
+                            {isEditing ? (
+                                <>
+                                    <button className="btn btn-outline-secondary" onClick={handleCancel}>Cancel</button>
+                                    <button className="btn btn-success" onClick={handleSave}>Save</button>
+                                    <button className="btn btn-danger" onClick={handleDelete}>Delete</button>
+                                </>
+                            ) : (
+                                <button className="btn btn-outline-primary" onClick={() => setIsEditing(true)}>
+                                    <i className="bi bi-pencil me-1"></i> Edit Event
+                                </button>
+                            )}
+                        </div>
+                    )}
+                    {showDeleteConfirm && (
+                        <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                            <div className="modal-dialog modal-dialog-centered">
+                                <div className="modal-content">
+                                    <div className="modal-header">
+                                        <h5 className="modal-title">Confirm Delete</h5>
+                                    </div>
+                                    <div className="modal-body">
+                                        <p>Are you sure you want to delete this event?</p>
+                                    </div>
+                                    <div className="modal-footer">
+                                        <button type="button" className="btn btn-secondary" onClick={cancelDelete}>Cancel</button>
+                                        <button type="button" className="btn btn-danger" onClick={confirmDelete}>Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+            <div className="row g-5">
+                <div className="col-lg-7">
+                    <section className="mb-5">
+                        <h3 className="h5 text-uppercase fw-bold text-primary border-start border-4 border-primary ps-3 mb-3">Description</h3>
                         {isEditing ? (
-                            <>
-                                <button className="btn btn-sm btn-outline-secondary" onClick={handleCancel}>Cancel</button>
-                                <button className="btn btn-sm btn-primary" onClick={handleSave}>Save Changes</button>
-                                <button className="btn btn-sm btn-alert" onClick={handleDelete}>Delete Event</button>
-                            </>
+                            <textarea 
+                                className="form-control" 
+                                name="description" 
+                                rows={8} 
+                                value={tempEvent.description} 
+                                onChange={handleInputChange} 
+                            />
                         ) : (
-                            <button className="btn btn-sm btn-outline-primary" onClick={() => setIsEditing(true)}>
-                                <i className="bi bi-pencil-square me-1"></i> Edit Event
-                            </button>
+                            <p className="lead text-secondary lh-lg">{event.description}</p>
                         )}
+                    </section>
+
+                    <div className="row g-3">
+                        <div className="col-md-6">
+                            <div className="p-3 bg-light rounded shadow-sm">
+                                <label className="d-block text-uppercase text-muted fw-bold small">Start Date</label>
+                                {isEditing ? (
+                                    <input type="datetime-local" name="startAt" className="form-control mt-2" value={tempEvent.startAt} onChange={handleInputChange} />
+                                ) : (
+                                    <div className="fs-5 fw-medium">{formatDate(event.startAt)}</div>
+                                )}
+                            </div>
+                        </div>
+                        <div className="col-md-6">
+                            <div className="p-3 bg-light rounded shadow-sm">
+                                <label className="d-block text-uppercase text-muted fw-bold small">End Date</label>
+                                {isEditing ? (
+                                    <input type="datetime-local" name="endAt" className="form-control mt-2" value={tempEvent.endAt} onChange={handleInputChange} />
+                                ) : (
+                                    <div className="fs-5 fw-medium">{formatDate(event.endAt)}</div>
+                                )}
+                            </div>
+                        </div>
                     </div>
-                )}
+                </div>
             </div>
         </div>
     );

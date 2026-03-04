@@ -35,7 +35,7 @@ const MapComponent: React.FC<MapProps> = ({ position,readOnly,onPositionChange }
                         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                         <LocationMarker position={position} />
                         {!readOnly && onPositionChange && (
-                            <MapPicker onLocationSelect={(lat, lng) => onPositionChange({ lat, lng })} />
+                            <MapPicker onLocationSelect={(lat, lng) => onPositionChange({ lat, lng, city: addressData?.city || '', county: addressData?.county || addressData?.principalSubdivision || '' })} />
                         )}
                     </MapContainer>
                 </div>

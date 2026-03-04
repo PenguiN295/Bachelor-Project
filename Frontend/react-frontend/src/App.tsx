@@ -14,14 +14,38 @@ import EventPage from './pages/EventPage';
 import OwnEventsPage from './pages/OwnEventsPage';
 import Layout from './components/Layout';
 import 'leaflet/dist/leaflet.css';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'sonner';
 
-const queryClient = new QueryClient();
+export const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error) => {
+      if (error instanceof Error && error.message.includes('401')) {
+        handleUnauthorized();
+      }
+    },
+  }),
+  mutationCache: new MutationCache({
+    onError: (error) => {
+      if (error instanceof Error && error.message.includes('401')) {
+        handleUnauthorized();
+      }
+    },
+  }),
+});
+const handleUnauthorized = () => {
+  localStorage.removeItem('token');
+  window.location.href = '/login';
+}
+
+
+
 const App: React.FC = () => {
   return (
     <BrowserRouter>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <Toaster position="top-left" />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />

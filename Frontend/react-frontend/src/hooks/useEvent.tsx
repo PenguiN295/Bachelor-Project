@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import url from "../../config";
 import type Event from "../Interfaces/Event";
 import { useAuth } from "../context/AuthContext";
+import { toast } from "sonner";
 
 export const useEvent = (id: string) => {
   const { token } = useAuth();
@@ -65,10 +66,23 @@ export const useEvent = (id: string) => {
       if (!res.ok) throw new Error("Update failed");
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["event", id] });
-      alert("Changes saved!");
+    onMutate: async (updatedEvent: Event) =>{
+      await queryClient.cancelQueries({ queryKey: ["event", id] });
+      const previousEvent = queryClient.getQueryData(["event", id]);
+      queryClient.setQueryData(["event", id], updatedEvent);
+      return { previousEvent };
     },
+    onSuccess: (_) => {
+      toast.success("Event updated successfully");
+      
+    },
+    onError: (_error ,_, context) => {
+      queryClient.setQueryData(["event", id], context?.previousEvent);
+      toast.error("Update failed. Reverting changes.");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["event", id] });
+    }
   });
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -85,7 +99,6 @@ export const useEvent = (id: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
-      alert("Event deleted!");
     },
   });
 

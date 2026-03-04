@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import url from '../../config';
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'sonner';
 
 const ProfileActions: React.FC<{ modifyUser: 'username' | 'password' }> = ({ modifyUser }) => {
     const { updateUser, token } = useAuth();
@@ -32,12 +33,16 @@ const ProfileActions: React.FC<{ modifyUser: 'username' | 'password' }> = ({ mod
             if (modifyUser === 'username' && formData.username.trim() !== '') {
                 updateUser(formData.username);
             }
+            else
+            {
+                toast.success("Password updated successfully");
+            }
             queryClient.invalidateQueries({ queryKey: ["userInfo"] })
             navigate('/dashboard');
         },
         onError: (error) => {
             console.error('Update failed:', error);
-            alert("Error updating profile. Please try again.");
+            toast.error("Error updating profile. Please try again.");
         }
     });
 
@@ -48,18 +53,16 @@ const ProfileActions: React.FC<{ modifyUser: 'username' | 'password' }> = ({ mod
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
-        if (modifyUser === 'password' && formData.password !== formData.confirmPassword) {
-            alert("Passwords do not match");
-            return;
-        }
-
         const payload: any = {};
         if (modifyUser === 'username') payload.Username = formData.username;
         if (modifyUser === 'password') {
             payload.Password = formData.password;
-            if (formData.password !== formData.confirmPassword) {
-                alert("Passwords do not match");
+            if (formData.password !== formData.confirmPassword ) {
+                toast.error("Passwords do not match");
+                return;
+            }
+            if(formData.password.length < 6) {
+                toast.error("Password must be at least 6 characters long");
                 return;
             }
         }

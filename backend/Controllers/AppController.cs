@@ -182,7 +182,7 @@ public class AppController : ControllerBase
 
             await _dbContext.SaveChangesAsync();
         }
-        return Ok(sr.Subscribe ? "Subscribed successfully" : "Unsubscribed successfully");
+        return Ok(sr.Subscribe ? new { message = "Subscribed successfully" } : new { message = "Unsubscribed successfully" });
     }
     [HttpGet("subscribed-status/{EventId}")]
     [Authorize(Roles = "User")]

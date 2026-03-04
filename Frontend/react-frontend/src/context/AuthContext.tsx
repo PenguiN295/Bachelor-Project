@@ -4,12 +4,13 @@ import { useState, useContext } from "react";
 import url from '../../config';
 import { useNavigate } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 interface AuthContextType {
     username: string | null;
     token: string | null;
     login: (token: string) => void;
     logout: () => void;
-    register: (username: string, newToken: string) => void;
+    register: (newToken: string) => void;
     updateUser: (newUsername: string) => void;
     loading: boolean
 
@@ -58,6 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     const updateUser = (newUsername: string) => {
         queryClient.setQueryData(["userInfo", token], newUsername);
+        toast.success("Username updated successfully")
     };
     return (
         <AuthContext.Provider value={{ username, token, login, logout, register, loading: isLoading, updateUser }}>

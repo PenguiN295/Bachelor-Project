@@ -13,26 +13,34 @@ const EventPage: React.FC = () => {
     if (loading) return <div className="vh-100 d-flex justify-content-center align-items-center"><LoadingState /></div>;
     if (error || !event) return <div className="vh-100 d-flex justify-content-center align-items-center">Something went wrong</div>;
     return <>
-        <div className=" d-flex justify-content-center align-items-center vh-100">
+        <div className=" bg-light min-vh-100">
             {loading ? (
                 <LoadingState />
             ) : event ? (
                 isOwner ? (
                     <div>
                         <EventComponent event={event} isEditable={true} onSave={updateEvent} onDelete={deleteEvent} />
-                        <MapComponent  position={{lat : event.latitude, lng: event.longitude}} />
+                        <div className="container py-5">
+                            <MapComponent position={{ lat: event.latitude, lng: event.longitude }} />
+                            
+                        </div>
                     </div>
 
                 ) : (
                     <div>
                         <EventComponent event={event} />
-                        <SubscribeComponent event={event} isSubscribed={isSubscribed}/>
-                        <MapComponent  position={{lat : event.latitude, lng: event.longitude}} />
+
+                        <div className="container py-5">
+                            <SubscribeComponent event={event} isSubscribed={isSubscribed} />
+                            <MapComponent position={{ lat: event.latitude, lng: event.longitude }} />
+                        </div>
                     </div>
-                )
-            ) :
-                <>Something went wrong</>}
-        </div>
+
+
+        )
+        ) :
+        <>Something went wrong</>}
+    </div >
 
 
     </>

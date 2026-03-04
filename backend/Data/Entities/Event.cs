@@ -4,6 +4,7 @@ public class Event
     public Guid Id { get; set; }
     public string Title { get; set; } = null!;
     public string Description { get; set; } = null!;
+    public string Slug { get; set; } = null!;
     public DateTimeOffset StartAt { get; set; }
     public DateTimeOffset EndAt { get; set; }
     public int MaxAttendees { get; set; }

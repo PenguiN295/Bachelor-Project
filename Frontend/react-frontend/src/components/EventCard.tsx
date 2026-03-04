@@ -11,8 +11,9 @@ interface EventCardProps {
 const EventCard: React.FC<EventCardProps> = ({ event }) => {
     const navigate = useNavigate();
     const handleEventPress = () => {
-        if(event.id)
-            navigate(`/event/${event.id}`)
+        if(event.slug)
+            console.log(event.slug);
+            navigate(`/event/${event.slug}`)
     }
     return (
         <button

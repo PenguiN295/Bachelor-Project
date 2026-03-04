@@ -1,14 +1,11 @@
 namespace backend.Controllers;
 
-using System.Collections.Generic;
 using backend.Data;
 using Microsoft.AspNetCore.Mvc;
 using backend.Data.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Reflection;
 using backend.Interfaces;
 using Mapster;
 
@@ -61,15 +58,16 @@ public class AppController : ControllerBase
             CreatorId = userGuid,
             ImageUrl = imageUrl
         };
+        eventEntity.Slug = SlugService.Generate(eventEntity.Title, eventEntity.Id);
         await _dbContext.Events.AddAsync(eventEntity);
         await _dbContext.SaveChangesAsync();
         return Ok(newEvent);
     }
-    [HttpGet("event/{id}")]
+    [HttpGet("event/{slug}")]
     [Authorize(Roles = "User")]
-    public async Task<IActionResult> GetEventById(Guid id)
+    public async Task<IActionResult> GetEventBySlug(string slug)
     {
-        var eventEntity = await _dbContext.Events.FindAsync(id);
+        var eventEntity = await _dbContext.Events.FirstOrDefaultAsync(e => e.Slug == slug);
         if (eventEntity == null)
         {
             return NotFound("Event not found");
@@ -184,50 +182,54 @@ public class AppController : ControllerBase
         }
         return Ok(sr.Subscribe ? new { message = "Subscribed successfully" } : new { message = "Unsubscribed successfully" });
     }
-    [HttpGet("subscribed-status/{EventId}")]
+    [HttpGet("subscribed-status/{slug}")]
     [Authorize(Roles = "User")]
-    public async Task<IActionResult> IsSubscribed(Guid EventId)
+    public async Task<IActionResult> IsSubscribed(string slug)
     {
-        if (EventId == Guid.Empty)
+        if (string.IsNullOrEmpty(slug))
         {
-            return BadRequest("Event id can't be empty");
+            return BadRequest("Event slug can't be empty");
         }
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(userIdClaim, out var userGuid))
         {
             return Unauthorized("Invalid or missing User ID in token.");
         }
+        var ev = await _dbContext.Events.FirstOrDefaultAsync(e => e.Slug == slug);
+        if (ev == null)        {
+            return NotFound("Event not found");
+        }
         var existingSub = await _dbContext.Subscriptions
-       .FirstOrDefaultAsync(s => s.UserId == userGuid && s.EventId == EventId);
+       .FirstOrDefaultAsync(s => s.UserId == userGuid && s.EventId == ev.Id);
         if (existingSub != null)
         {
             return Ok(new { status = "Subscribed" });
         }
         return Ok(new { status = "Not Subscribed" });
     }
-    [HttpGet("ownership-status/{EventId}")]
+    [HttpGet("ownership-status/{slug}")]
     [Authorize(Roles = "User")]
-    public async Task<IActionResult> IsOwner(Guid EventId)
+    public async Task<IActionResult> IsOwner(string slug)
     {
-        if (EventId == Guid.Empty)
+        if (string.IsNullOrEmpty(slug))
         {
-            return BadRequest("Event id can't be empty");
+            return BadRequest("Event slug can't be empty");
         }
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(userIdClaim, out var userGuid))
         {
             return Unauthorized("Invalid or missing User ID in token.");
         }
-        var ev = await _dbContext.Events.FirstOrDefaultAsync(e => e.CreatorId == userGuid && e.Id == EventId);
+        var ev = await _dbContext.Events.FirstOrDefaultAsync(e => e.CreatorId == userGuid && e.Slug == slug);
         if (ev != null)
         {
             return Ok(new { status = "Owner" });
         }
         return Ok(new { status = "Not Owner" });
     }
-    [HttpPut("update-event/{eventId}")]
+    [HttpPut("update-event/{slug}")]
     [Authorize(Roles = "User")]
-    public async Task<IActionResult> UpdateEvent([FromBody] EventRequest eventRequest, Guid eventId)
+    public async Task<IActionResult> UpdateEvent([FromBody] EventRequest eventRequest, string slug)
     {
         if (eventRequest == null)
         {
@@ -238,10 +240,10 @@ public class AppController : ControllerBase
         {
             return Unauthorized("Invalid or missing User ID in token.");
         }
-        var existingEvent = await _dbContext.Events.FirstOrDefaultAsync(e => e.Id == eventId);
+        var existingEvent = await _dbContext.Events.FirstOrDefaultAsync(e => e.Slug == slug);
         if (existingEvent == null)
         {
-            return BadRequest("Not found");
+            return BadRequest("Event not found");
         }
         eventRequest.CreatorId = userGuid;
         eventRequest.Adapt(existingEvent);
@@ -249,16 +251,16 @@ public class AppController : ControllerBase
         await _dbContext.SaveChangesAsync();
         return Ok(new { status = "Saved"});
     }
-    [HttpDelete("delete-event/{eventId}")]
+    [HttpDelete("delete-event/{slug}")]
     [Authorize(Roles = "User")]
-    public async Task<IActionResult> DeleteEvent(Guid eventId)
+    public async Task<IActionResult> DeleteEvent(string slug)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(userIdClaim, out var userGuid))
         {
             return Unauthorized("Invalid or missing User ID in token.");
         }
-        var existingEvent = await _dbContext.Events.FirstOrDefaultAsync(e => e.Id == eventId);
+        var existingEvent = await _dbContext.Events.FirstOrDefaultAsync(e => e.Slug == slug);
         if (existingEvent == null)
         {
             return BadRequest("Event not found");

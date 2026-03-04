@@ -7,8 +7,8 @@ import MapComponent from "../components/MapComponent";
 
 
 const EventPage: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
-    const { event, loading, isOwner, isSubscribed, updateEvent, deleteEvent, error } = useEvent(id!);
+    const { slug } = useParams<{ slug: string }>();
+    const { event, loading, isOwner, isSubscribed, updateEvent, deleteEvent, error } = useEvent(slug!);
 
     if (loading) return <div className="vh-100 d-flex justify-content-center align-items-center"><LoadingState /></div>;
     if (error || !event) return <div className="vh-100 d-flex justify-content-center align-items-center">Something went wrong</div>;

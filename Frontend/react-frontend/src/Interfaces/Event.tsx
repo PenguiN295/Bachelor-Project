@@ -10,6 +10,7 @@ export default interface Event {
   latitude: number;
   longitude: number;
   city: string;
+  slug: string;
   county: string;
   imageUrl: string;
 }

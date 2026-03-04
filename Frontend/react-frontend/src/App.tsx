@@ -14,31 +14,9 @@ import EventPage from './pages/EventPage';
 import OwnEventsPage from './pages/OwnEventsPage';
 import Layout from './components/Layout';
 import 'leaflet/dist/leaflet.css';
-import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
-
-export const queryClient = new QueryClient({
-  queryCache: new QueryCache({
-    onError: (error) => {
-      if (error instanceof Error && error.message.includes('401')) {
-        handleUnauthorized();
-      }
-    },
-  }),
-  mutationCache: new MutationCache({
-    onError: (error) => {
-      if (error instanceof Error && error.message.includes('401')) {
-        handleUnauthorized();
-      }
-    },
-  }),
-});
-const handleUnauthorized = () => {
-  localStorage.removeItem('token');
-  window.location.href = '/login';
-}
-
-
+const queryClient = new QueryClient();
 
 const App: React.FC = () => {
   return (
@@ -56,7 +34,7 @@ const App: React.FC = () => {
               <Route path="/profile" element={<UserPage />} />
               <Route path="/ChangePage/:modifyUser" element={<ChangePage />} />
               <Route path="/CreateEvent" element={<CreateEventPage />} />
-              <Route path="/Event/:id" element={<EventPage />} />
+              <Route path="/Event/:slug" element={<EventPage />} />
               <Route path="/own-events" element={<OwnEventsPage />} />
             </Route>
           </Route>

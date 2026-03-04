@@ -15,7 +15,7 @@ const defaultFilters: EventFilter = {
 };
 
 export const useEvents = (initialFilters: Partial<EventFilter> = {}) => {
-    const { token } = useAuth();
+    const { token, logout } = useAuth();
     const [filters, setFilters] = useState<EventFilter>({
         ...defaultFilters,
         ...initialFilters
@@ -36,7 +36,11 @@ export const useEvents = (initialFilters: Partial<EventFilter> = {}) => {
             const response = await fetch(`${url}/events?${queryParams}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            if (!response.ok) throw new Error("Failed to fetch events");
+            if (!response.ok)
+                 if (response.status === 401) {
+                    logout();
+                    throw new Error("Unauthorized");
+                }
             return response.json();
         },
         enabled: !!token,

@@ -6,7 +6,7 @@ public class EventRequest
     public string Description { get; set; } = null!;
     public DateTimeOffset StartAt { get; set; }
     public DateTimeOffset EndAt { get; set; }
-    public string slug { get; set; } = null!;
+    public string? Slug { get; set; } = null!;
     public int MaxAttendees { get; set; }
     public int CurrentAttendees { get; set; }
     public int Price { get; set; }

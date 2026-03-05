@@ -6,7 +6,7 @@ import HomeButton from './HomeButton';
 const Mainbar : React.FC = () =>
 {   
     return (
-    <Navbar collapseOnSelect expand="lg" bg="light" variant="light">
+    <Navbar collapseOnSelect expand="lg" bg="light" variant="light" className="shadow-sm" >
       <Container fluid>
           <HomeButton />
          

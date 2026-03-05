@@ -23,6 +23,7 @@ const CreateEventPage: React.FC = () => {
         price: 0,
         latitude: 0,
         longitude: 0,
+        slug: '',
         city: '',
         county: '',
         imageUrl: '',

@@ -35,10 +35,10 @@ public class AppController : ControllerBase
             return Unauthorized("Invalid or missing User ID in token.");
         }
         string? imageUrl = null;
-        if(newEvent.ImageFile != null)
+        if (newEvent.ImageFile != null)
         {
             var result = await _photoService.AddPhotoAsync(newEvent.ImageFile);
-            imageUrl = result.SecureUrl.AbsoluteUri;
+            imageUrl = result.PublicId;
         }
 
         var eventEntity = new Event
@@ -67,11 +67,13 @@ public class AppController : ControllerBase
     [Authorize(Roles = "User")]
     public async Task<IActionResult> GetEventBySlug(string slug)
     {
-        var eventEntity = await _dbContext.Events.FirstOrDefaultAsync(e => e.Slug == slug);
+        var eventEntity = await _dbContext.Events.AsNoTracking().FirstOrDefaultAsync(e => e.Slug == slug);
         if (eventEntity == null)
         {
             return NotFound("Event not found");
         }
+        if (eventEntity.ImageUrl != null)
+            eventEntity.ImageUrl = _photoService.BuildUrl(eventEntity.ImageUrl);
         return Ok(eventEntity);
     }
     [HttpGet("events")]
@@ -106,7 +108,7 @@ public class AppController : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(filter.Location))
         {
-            query = query.Where(e => EF.Functions.ILike(e.City,$"%{filter.Location}%") || EF.Functions.ILike(e.County, $"%{filter.Location}%"));
+            query = query.Where(e => EF.Functions.ILike(e.City, $"%{filter.Location}%") || EF.Functions.ILike(e.County, $"%{filter.Location}%"));
         }
         if (filter.ShowFull == false)
         {
@@ -120,7 +122,7 @@ public class AppController : ControllerBase
         int skip = (filter.Page - 1) * pageSize;
 
         var filteredResults = await query.OrderByDescending(e => e.StartAt).Skip(skip).Take(pageSize).ToListAsync();
-
+        filteredResults.ForEach(e => e.ImageUrl = e.ImageUrl != null ? e.ImageUrl=_photoService.BuildUrl(e.ImageUrl) : null);
         return Ok(filteredResults);
     }
     [HttpGet("user-info")]
@@ -196,7 +198,8 @@ public class AppController : ControllerBase
             return Unauthorized("Invalid or missing User ID in token.");
         }
         var ev = await _dbContext.Events.FirstOrDefaultAsync(e => e.Slug == slug);
-        if (ev == null)        {
+        if (ev == null)
+        {
             return NotFound("Event not found");
         }
         var existingSub = await _dbContext.Subscriptions
@@ -249,7 +252,7 @@ public class AppController : ControllerBase
         eventRequest.Adapt(existingEvent);
         _dbContext.Events.Update(existingEvent);
         await _dbContext.SaveChangesAsync();
-        return Ok(new { status = "Saved"});
+        return Ok(new { status = "Saved" });
     }
     [HttpDelete("delete-event/{slug}")]
     [Authorize(Roles = "User")]
@@ -266,8 +269,12 @@ public class AppController : ControllerBase
             return BadRequest("Event not found");
         }
         _dbContext.Events.Remove(existingEvent);
+        if (existingEvent.ImageUrl != null)
+        {
+            await _photoService.DeletePhotoAsync(existingEvent.ImageUrl);
+        }
         await _dbContext.SaveChangesAsync();
-        return Ok(new { status = "Deleted"});
+        return Ok(new { status = "Deleted" });
     }
 
 }

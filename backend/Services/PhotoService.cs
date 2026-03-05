@@ -29,5 +29,14 @@ public class PhotoService : IPhotoService
         }
         return uploadResult;
     }
+    public async Task DeletePhotoAsync(string publicId)
+    {
+        var deleteParams = new DeletionParams(publicId);
+        await _cloudinary.DestroyAsync(deleteParams);
+    }
+    public string BuildUrl(string publicId)
+    {
+        return _cloudinary.Api.UrlImgUp.Transform(new Transformation().Gravity("face").FetchFormat("auto").Quality("auto")).BuildUrl(publicId);
+    }
     
 }

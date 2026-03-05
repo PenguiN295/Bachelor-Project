@@ -31,7 +31,7 @@ const MapComponent: React.FC<MapProps> = ({ position,readOnly,onPositionChange }
                     <div className="info-panel">
                         Location: {addressData ? `${addressData.city}, ${addressData.principalSubdivision}` : 'Loading...'}
                     </div>
-                    <MapContainer center={position} zoom={13} style={{ height: '400px' }}>
+                    <MapContainer center={position} zoom={13} style={{ height: '300px' }}>
                         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                         <LocationMarker position={position} />
                         {!readOnly && onPositionChange && (

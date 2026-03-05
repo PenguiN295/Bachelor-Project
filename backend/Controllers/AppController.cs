@@ -122,7 +122,7 @@ public class AppController : ControllerBase
         int skip = (filter.Page - 1) * pageSize;
 
         var filteredResults = await query.OrderByDescending(e => e.StartAt).Skip(skip).Take(pageSize).ToListAsync();
-        filteredResults.ForEach(e => e.ImageUrl = e.ImageUrl != null ? e.ImageUrl=_photoService.BuildUrl(e.ImageUrl) : null);
+        filteredResults.ForEach(e => e.ImageUrl = e.ImageUrl != null ? e.ImageUrl = _photoService.BuildUrl(e.ImageUrl) : null);
         return Ok(filteredResults);
     }
     [HttpGet("user-info")]
@@ -248,7 +248,13 @@ public class AppController : ControllerBase
         {
             return BadRequest("Event not found");
         }
+        if (existingEvent.CreatorId != userGuid)
+        {
+            return Forbid("You are not authorized to delete this event");
+        }
         eventRequest.CreatorId = userGuid;
+        eventRequest.ImageFile = null;
+        eventRequest.CurrentAttendees = existingEvent.CurrentAttendees;
         eventRequest.Adapt(existingEvent);
         _dbContext.Events.Update(existingEvent);
         await _dbContext.SaveChangesAsync();
@@ -268,11 +274,22 @@ public class AppController : ControllerBase
         {
             return BadRequest("Event not found");
         }
-        _dbContext.Events.Remove(existingEvent);
+        if (existingEvent.CreatorId != userGuid)
+        {
+            return Forbid("You are not authorized to update this event");
+        }
         if (existingEvent.ImageUrl != null)
         {
-            await _photoService.DeletePhotoAsync(existingEvent.ImageUrl);
+            try
+            {
+                await _photoService.DeletePhotoAsync(existingEvent.ImageUrl);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Failed to delete associated photo: " + ex.Message);
+            }
         }
+        _dbContext.Events.Remove(existingEvent);
         await _dbContext.SaveChangesAsync();
         return Ok(new { status = "Deleted" });
     }

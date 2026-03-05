@@ -13,6 +13,7 @@ interface SubscribeProp {
 const SubscribeComponent: React.FC<SubscribeProp> = ({ isSubscribed, event: { id,
     maxAttendees,
     currentAttendees,
+    slug
 } }) => {
     const { token } = useAuth();
     const queryClient = useQueryClient();
@@ -32,9 +33,9 @@ const SubscribeComponent: React.FC<SubscribeProp> = ({ isSubscribed, event: { id
             return response.json();
         },
         onMutate: async (intent: boolean) => {
-            await queryClient.cancelQueries({ queryKey: ["subscription", id] });
-            const previousSubscription = queryClient.getQueryData(["subscription", id]);
-            queryClient.setQueryData(["subscription", id], intent);
+            await queryClient.cancelQueries({ queryKey: ["subscription", slug] });
+            const previousSubscription = queryClient.getQueryData(["subscription", slug]);
+            queryClient.setQueryData(["subscription", slug], intent);
             toast.loading(intent ? "Subscribing..." : "Unsubscribing...", { id: "sub-action" });
 
             return { previousSubscription };
@@ -45,11 +46,12 @@ const SubscribeComponent: React.FC<SubscribeProp> = ({ isSubscribed, event: { id
             });
         },
         onError: (_error, _intent, context) => {
-            queryClient.setQueryData(["subscription", id], context?.previousSubscription);
+            queryClient.setQueryData(["subscription", slug], context?.previousSubscription);
             toast.error("Action failed. Reverting changes.", { id: "sub-action" });
         },
         onSettled: () => {
-        queryClient.invalidateQueries({ queryKey: ["subscription", id] });
+        queryClient.invalidateQueries({ queryKey: ["subscription", slug] });
+        queryClient.invalidateQueries({ queryKey: ["event", slug] });
     },
     });
 

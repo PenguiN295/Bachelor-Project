@@ -32,7 +32,15 @@ public class PhotoService : IPhotoService
     public async Task DeletePhotoAsync(string publicId)
     {
         var deleteParams = new DeletionParams(publicId);
+        try
+        {
+            
         await _cloudinary.DestroyAsync(deleteParams);
+        }
+        catch ( Exception ex)
+         {
+             throw new Exception("Error deleting photo: " + ex.Message);
+        }
     }
     public string BuildUrl(string publicId)
     {

@@ -16,9 +16,9 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete
     const [isEditing, setIsEditing] = useState(false);
     const [tempEvent, setTempEvent] = useState<Event>(event);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
+        
         setTempEvent(prev => ({ ...prev, [name]: name === 'price' || name === 'maxAttendees' ? Number(value) : value }));
     };
 

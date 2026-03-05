@@ -108,7 +108,6 @@ const CreateEventPage: React.FC = () => {
                     </div>
 
                     <div>
-                        <label>Location</label>
                         <MapComponent position={{ lat: formData.latitude, lng: formData.longitude }} readOnly={false} onPositionChange={handlePositionChange} />
                     </div>
 

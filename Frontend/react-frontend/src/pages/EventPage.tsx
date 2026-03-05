@@ -10,7 +10,7 @@ const EventPage: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
     const { event, loading, isOwner, isSubscribed, updateEvent, deleteEvent, error } = useEvent(slug!);
 
-    if (loading) return <div className="vh-100 d-flex justify-content-center align-items-center"><LoadingState /></div>;
+    
     if (error || !event) return <div className="vh-100 d-flex justify-content-center align-items-center">Something went wrong</div>;
     return <>
         <div className=" bg-light min-vh-100">

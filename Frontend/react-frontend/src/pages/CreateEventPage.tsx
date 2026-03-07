@@ -6,9 +6,12 @@ import { useNavigate } from "react-router-dom";
 import { useCreateEvent } from "../hooks/useCreateEvent";
 import MapComponent from "../components/MapComponent";
 import { toast } from "sonner";
+import CategoryMultiSelect from "../components/CategoryMultiSelect";
+import { useCategories } from "../hooks/useCategories";
 
 const CreateEventPage: React.FC = () => {
     const { createEvent, isPending, error } = useCreateEvent();
+    const { categories } = useCategories();
     const navigate = useNavigate();
     const [file, setFile] = useState<File | null>(null);
 
@@ -27,6 +30,7 @@ const CreateEventPage: React.FC = () => {
         city: '',
         county: '',
         imageUrl: '',
+        categoryIds: [],
     });
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
         const { name, value, type } = e.target;
@@ -132,6 +136,11 @@ const CreateEventPage: React.FC = () => {
                     >
                         {isPending ? 'Creating...' : 'Save Event'}
                     </button>
+                    <CategoryMultiSelect
+                        categories={categories}
+                        value={formData.categoryIds}
+                        onChange={(categoryIds) => setFormData(prev => ({ ...prev, categoryIds }))}
+                        />
                 </form>
             </div>
         </div>

@@ -15,6 +15,7 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const [tempEvent, setTempEvent] = useState<Event>(event);
+    console.log(event);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;

@@ -1,4 +1,5 @@
 namespace backend.Data.Entities;
+
 public class Event
 {
     public Guid Id { get; set; }
@@ -9,7 +10,7 @@ public class Event
     public DateTimeOffset EndAt { get; set; }
     public int MaxAttendees { get; set; }
     public int CurrentAttendees { get; set; }
-    public int Price { get; set; }
+    public decimal Price { get; set; }
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public string City { get; set; } = null!;
@@ -17,5 +18,6 @@ public class Event
 
     public string? ImageUrl { get; set; }
     public Guid CreatorId { get; set; }
-
+    public ICollection<Category> Categories { get; set; } = new HashSet<Category>();
 }
+

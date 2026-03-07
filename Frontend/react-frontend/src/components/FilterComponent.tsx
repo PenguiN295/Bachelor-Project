@@ -1,13 +1,16 @@
 import type React from "react";
 import type { EventFilter } from "../Interfaces/EventFilter";
+import CategoryMultiSelect from "./CategoryMultiSelect";
 interface FilterProps {
     filters: EventFilter;
+    categories: { id: string; name: string }[];
     handleFilterChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    handleFilterClear: () =>void ;
+    handleFilterClear: () => void;
+    handleCategoryChange: (categoryIds: string[]) => void;
 }
 
 
-const FilterComponent: React.FC<FilterProps> = ({ filters, handleFilterChange,handleFilterClear }) => {
+const FilterComponent: React.FC<FilterProps> = ({ filters, categories, handleFilterChange, handleFilterClear, handleCategoryChange }) => {
     return <>
         <div className="filter-bar">
             <input
@@ -74,6 +77,11 @@ const FilterComponent: React.FC<FilterProps> = ({ filters, handleFilterChange,ha
                 Clear All Filters
             </button>
         </div>
+        <CategoryMultiSelect
+            categories={categories}
+            value={filters.categoryIds!}
+            onChange={handleCategoryChange}
+        />
 
 
     </>;

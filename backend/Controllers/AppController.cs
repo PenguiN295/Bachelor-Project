@@ -58,10 +58,25 @@ public class AppController : ControllerBase
             CreatorId = userGuid,
             ImageUrl = imageUrl
         };
+
+        foreach (var id in newEvent.CategoryIds)
+        {
+            var trackedCategory = _dbContext.Categories.Local.FirstOrDefault(c => c.Id == id);
+
+            if (trackedCategory == null)
+            {
+                trackedCategory = new Category { Id = id };
+                _dbContext.Categories.Attach(trackedCategory);
+            }
+
+            eventEntity.Categories.Add(trackedCategory);
+
+        }
         eventEntity.Slug = SlugService.Generate(eventEntity.Title, eventEntity.Id);
         await _dbContext.Events.AddAsync(eventEntity);
         await _dbContext.SaveChangesAsync();
-        return Ok(newEvent);
+
+        return Ok("Event created successfully");
     }
     [HttpGet("event/{slug}")]
     [Authorize(Roles = "User")]
@@ -117,6 +132,10 @@ public class AppController : ControllerBase
         if (filter.CreatedByMe == true)
         {
             query = query.Where(e => e.CreatorId == userGuid);
+        }
+        if (filter.CategoryIds != null && filter.CategoryIds.Any())
+        {
+            query = query.Where(e => e.Categories.Any(c => filter.CategoryIds.Contains(c.Id)));
         }
         int pageSize = 50;
         int skip = (filter.Page - 1) * pageSize;
@@ -292,6 +311,17 @@ public class AppController : ControllerBase
         _dbContext.Events.Remove(existingEvent);
         await _dbContext.SaveChangesAsync();
         return Ok(new { status = "Deleted" });
+    }
+    [HttpGet("categories")]
+    [Authorize(Roles = "User,Admin")]
+    public async Task<IActionResult> GetCategories()
+    {
+        var categories = await _dbContext.Categories.AsNoTracking().Select(c => new CategoryResponse
+        {
+            Id = c.Id,
+            Name = c.Name
+        }).ToListAsync();
+        return Ok(categories);
     }
 
 }

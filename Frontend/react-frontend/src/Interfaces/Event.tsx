@@ -13,4 +13,5 @@ export default interface Event {
   slug: string;
   county: string;
   imageUrl: string;
+  categoryIds: string[];
 }

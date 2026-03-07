@@ -5,6 +5,7 @@ import { useEvents } from '../hooks/useEvents'
 import LoadingState from '../components/LoadingState';
 import FilterComponent from '../components/FilterComponent';
 import { CreateEventButton } from '../components/CreateEventButton';
+import { useCategories } from '../hooks/useCategories';
 
 
 
@@ -12,7 +13,11 @@ import { CreateEventButton } from '../components/CreateEventButton';
 
 const Dashboard: React.FC = () => {
 
-  const { events, loading, filters, handleFilterChange, handleFilterClear } = useEvents();
+  const { events, loading, filters, handleFilterChange, handleFilterClear, handleCategoryChange } = useEvents();
+  
+  const { categories } = useCategories();
+
+  
   return (
     <div className="container mt-5">
       
@@ -24,8 +29,10 @@ const Dashboard: React.FC = () => {
             <h5 className="mb-3">Filters</h5>
             <FilterComponent
               filters={filters}
+              categories={categories}
               handleFilterChange={handleFilterChange}
               handleFilterClear={handleFilterClear}
+              handleCategoryChange={handleCategoryChange}
             />
             <CreateEventButton/>
           </div>

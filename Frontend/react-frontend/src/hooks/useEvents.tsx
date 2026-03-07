@@ -22,7 +22,6 @@ export const useEvents = (initialFilters: Partial<EventFilter> = {}) => {
     });
     const debouncedSearch = useDebounce(filters.search, 500);
     const debouncedLocation = useDebounce(filters.location, 500);
-
     const { data: events = [], isLoading } = useQuery({
         queryKey: ["events", { ...filters, search: debouncedSearch, location: debouncedLocation }],
         queryFn: async (): Promise<Event[]> => {
@@ -37,7 +36,7 @@ export const useEvents = (initialFilters: Partial<EventFilter> = {}) => {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (!response.ok)
-                 if (response.status === 401) {
+                if (response.status === 401) {
                     logout();
                     throw new Error("Unauthorized");
                 }
@@ -48,8 +47,8 @@ export const useEvents = (initialFilters: Partial<EventFilter> = {}) => {
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
-        const finalValue = type === 'checkbox' 
-            ? (e.target as HTMLInputElement).checked 
+        const finalValue = type === 'checkbox'
+            ? (e.target as HTMLInputElement).checked
             : value;
 
         setFilters(prev => ({
@@ -61,11 +60,20 @@ export const useEvents = (initialFilters: Partial<EventFilter> = {}) => {
 
     const handleFilterClear = () => setFilters(defaultFilters);
 
-    return { 
-        events, 
-        loading: isLoading, 
-        filters, 
-        handleFilterChange, 
-        handleFilterClear 
+    const handleCategoryChange = (values: string[]) => {
+        setFilters(prev => ({
+            ...prev,
+            categoryIds: values.length > 0 ? values : undefined,
+        }));
+
+    };
+
+    return {
+        events,
+        loading: isLoading,
+        filters,
+        handleFilterChange,
+        handleFilterClear,
+        handleCategoryChange
     };
 };

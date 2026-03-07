@@ -20,7 +20,7 @@ import { useAuth } from "../context/AuthContext";
                 const errorBody = await response.text();
                 throw new Error(errorBody || "Failed to create Event");
             }
-            return response.json();
+            return response.text();
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["events"] });

@@ -16,6 +16,7 @@ import Layout from './components/Layout';
 import 'leaflet/dist/leaflet.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
+import ViewUserPage from './pages/ViewUserPage';
 const queryClient = new QueryClient();
 
 const App: React.FC = () => {
@@ -36,6 +37,8 @@ const App: React.FC = () => {
               <Route path="/CreateEvent" element={<CreateEventPage />} />
               <Route path="/Event/:slug" element={<EventPage />} />
               <Route path="/own-events" element={<OwnEventsPage />} />
+              <Route path="/profile/:userId" element={<ViewUserPage />} />
+              
             </Route>
           </Route>
 

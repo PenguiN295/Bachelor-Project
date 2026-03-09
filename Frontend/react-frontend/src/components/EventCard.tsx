@@ -12,7 +12,6 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
     const navigate = useNavigate();
     const handleEventPress = () => {
         if(event.slug)
-            console.log(event.slug);
             navigate(`/event/${event.slug}`)
     }
     return (

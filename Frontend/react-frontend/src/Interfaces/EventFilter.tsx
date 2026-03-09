@@ -7,5 +7,6 @@ export interface EventFilter{
   showFull?: boolean;
   page: number;
   createdByMe? : boolean;
+  userId? : string;
   categoryIds? : string[];
 }

@@ -20,8 +20,10 @@ export const useCategories = () => {
             });
             if (!response.ok) toast.error("Failed to fetch categories");
             return response.json();
-        }
+        },
+        staleTime: 5 * 60 * 1000,
     })
+    
     return {categories : categoriesQuery.data,
         isLoading: categoriesQuery.isLoading,
         error: categoriesQuery.error

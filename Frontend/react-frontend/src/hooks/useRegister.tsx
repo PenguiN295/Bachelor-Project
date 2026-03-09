@@ -31,6 +31,7 @@ export const useRegister = () => {
             authRegister(data.token);
             navigate("/dashboard");
         }
+        
     })
 
     return {

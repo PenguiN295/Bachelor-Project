@@ -12,7 +12,8 @@ export const useMapData  = (position: {lat : number, lng : number}, ) => {
       );
       const data = await response.json();
       return data
-    }
+    },
+    staleTime: 5 * 60 * 1000,
   });
 
   return (

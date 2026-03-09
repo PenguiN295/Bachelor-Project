@@ -3,9 +3,11 @@ import url from "../../config";
 import type Event from "../Interfaces/Event";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 export const useEvent = (slug: string) => {
   const { token } = useAuth();
+  const navgiate = useNavigate();
   const queryClient = useQueryClient();
   const eventQuery = useQuery({
     queryKey: ["event", slug],
@@ -21,6 +23,7 @@ export const useEvent = (slug: string) => {
       return response.json();
     },
     enabled: !!slug && !!token,
+    staleTime: 5 * 60 * 1000,
   });
 
   const ownershipQuery = useQuery({
@@ -38,6 +41,7 @@ export const useEvent = (slug: string) => {
       return data.status === "Owner";
     },
     enabled: !!slug && !!token && !!eventQuery.data,
+    staleTime: 5 * 60 * 1000,
   });
 
 
@@ -52,6 +56,7 @@ export const useEvent = (slug: string) => {
       return data.status === "Subscribed";
     },
     enabled: !!slug && !!token && !!eventQuery.data,
+    staleTime: 5 * 60 * 1000,
   });
   const updateMutation = useMutation({
     mutationFn: async (updatedEvent: Event) => {
@@ -64,7 +69,8 @@ export const useEvent = (slug: string) => {
         body: JSON.stringify(updatedEvent),
       });
       if (!res.ok) throw new Error("Update failed");
-      return res.json();
+      const data = await res.json();
+      return data.slug;
     },
     onMutate: async (updatedEvent: Event) => {
       await queryClient.cancelQueries({ queryKey: ["event", slug] });
@@ -76,9 +82,9 @@ export const useEvent = (slug: string) => {
       }));
       return { previousEvent };
     },
-    onSuccess: (_) => {
+    onSuccess: (newSlug) => {
       toast.success("Event updated successfully");
-
+      navgiate(`/event/${newSlug || slug}`);
     },
     onError: (_error, _, context) => {
       queryClient.setQueryData(["event", slug], context?.previousEvent);
@@ -90,7 +96,6 @@ export const useEvent = (slug: string) => {
   });
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      console.log(slug);
       const res = await fetch(`${url}/delete-event/${slug}`, {
         method: "DELETE",
         headers: {
@@ -116,9 +121,10 @@ export const useEvent = (slug: string) => {
       });
       if (!res.ok) throw new Error("Failed to fetch creator");
       const data = await res.json();
-      return data.name;
+      return data;
     },
     enabled: !!slug && !!token && !!eventQuery.data,
+    staleTime: 5 * 60 * 1000,
   });
 
 

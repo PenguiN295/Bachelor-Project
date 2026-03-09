@@ -10,7 +10,7 @@ public class FilterRequest
     public bool ShowFull { get; set; } = false;
     public int Page { get; set; } = 1;
     public bool CreatedByMe { get; set; } = false;
-
+    public Guid? UserId { get; set; }
     public List<Guid> CategoryIds { get; set; } = new List<Guid>();
 }
 public static class ObjectExtension

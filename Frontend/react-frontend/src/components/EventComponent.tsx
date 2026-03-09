@@ -10,13 +10,24 @@ export interface EventProp {
     onSave?: (updatedEvent: Event) => void;
     onDelete?: () => void;
     creator?: string | null;
+    creatorId?: string | null;
 }
 
-const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete, creator}) => {
+const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete, creator, creatorId }) => {
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const [tempEvent, setTempEvent] = useState<Event>(event);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const handleCreatorClick = () => {
+        if(creatorId){
+            if(isEditable)
+            {
+                navigate('/profile');
+                return;
+            }
+            navigate(`/profile/${creatorId}`);
+        }
+    };
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         
@@ -25,7 +36,7 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete
 
     const handleSave = () => {
         onSave?.(tempEvent);
-        setIsEditing(false);
+        setIsEditing(false); 
     };
     const handleDelete = () =>{
         setShowDeleteConfirm(true);
@@ -173,7 +184,9 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete
                         <div>
                             <div className="p-3 bg-light rounded shadow-sm mt-3">
                                 <label className="d-block text-uppercase text-muted fw-bold small">Organizer </label>
-                                <div className="fs-5 fw-medium">{creator || "Unknown"}</div>
+                                <button className="fs-5 fw-medium " onClick={handleCreatorClick}>
+                                    {creator || "Unknown"}
+                                </button>
                             </div>
                         </div>
                     </div>

@@ -133,6 +133,10 @@ public class AppController : ControllerBase
         {
             query = query.Where(e => e.CreatorId == userGuid);
         }
+        if (filter.UserId != null)
+        {
+            query = query.Where(e => e.CreatorId == filter.UserId);
+        }
         if (filter.CategoryIds != null && filter.CategoryIds.Any())
         {
             query = query.Where(e => e.Categories.Any(c => filter.CategoryIds.Contains(c.Id)));
@@ -274,10 +278,19 @@ public class AppController : ControllerBase
         eventRequest.CreatorId = userGuid;
         eventRequest.ImageFile = null;
         eventRequest.CurrentAttendees = existingEvent.CurrentAttendees;
+        if(eventRequest.Title != existingEvent.Title)
+        {
+
+            eventRequest.Slug = SlugService.Generate(eventRequest.Title, existingEvent.Id);
+        }
+        else
+        {
+            eventRequest.Slug = existingEvent.Slug;
+        }
         eventRequest.Adapt(existingEvent);
         _dbContext.Events.Update(existingEvent);
         await _dbContext.SaveChangesAsync();
-        return Ok(new { status = "Saved" });
+        return Ok(new { slug = eventRequest.Slug });
     }
     [HttpDelete("delete-event/{slug}")]
     [Authorize(Roles = "User")]
@@ -337,7 +350,7 @@ public class AppController : ControllerBase
         {
             return BadRequest("Creator not found");
         }
-        return Ok(new { name = creator.Username });
+        return Ok(new { name = creator.Username , id = creator.Id});
     }
 
 }

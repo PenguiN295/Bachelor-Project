@@ -8,7 +8,7 @@ import MapComponent from "../components/MapComponent";
 
 const EventPage: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
-    const { event, loading, isOwner, isSubscribed, updateEvent, deleteEvent, error } = useEvent(slug!);
+    const { event, loading, isOwner, isSubscribed, updateEvent, deleteEvent, error, creator } = useEvent(slug!);
 
     
     if (error || !event) return <div className="vh-100 d-flex justify-content-center align-items-center">Something went wrong</div>;
@@ -19,7 +19,8 @@ const EventPage: React.FC = () => {
             ) : event ? (
                 isOwner ? (
                     <div>
-                        <EventComponent event={event} isEditable={true} onSave={updateEvent} onDelete={deleteEvent} />
+                        <EventComponent event={event} isEditable={true} 
+                        onSave={updateEvent} onDelete={deleteEvent} creator={creator} />
                         <div className="container py-5">
                             <MapComponent position={{ lat: event.latitude, lng: event.longitude }} />
                             
@@ -28,7 +29,7 @@ const EventPage: React.FC = () => {
 
                 ) : (
                     <div>
-                        <EventComponent event={event} />
+                        <EventComponent event={event} creator={creator} />
 
                         <div className="container py-5">
                             <SubscribeComponent event={event} isSubscribed={isSubscribed} />

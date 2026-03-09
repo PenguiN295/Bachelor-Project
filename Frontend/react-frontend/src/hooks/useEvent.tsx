@@ -105,6 +105,22 @@ export const useEvent = (slug: string) => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
     },
   });
+  const creatorQuery = useQuery({
+    queryKey: ["creator", slug],
+    queryFn: async () => {
+      const res = await fetch(`${url}/creator-name/${slug}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) throw new Error("Failed to fetch creator");
+      const data = await res.json();
+      return data.name;
+    },
+    enabled: !!slug && !!token && !!eventQuery.data,
+  });
+
 
   return {
     event: eventQuery.data ?? null,
@@ -115,5 +131,6 @@ export const useEvent = (slug: string) => {
     updateEvent: updateMutation.mutate,
     deleteEvent: deleteMutation.mutate,
     isUpdating: updateMutation.isPending,
+    creator: creatorQuery.data ?? null,
   };
 };

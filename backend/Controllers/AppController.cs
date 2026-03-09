@@ -323,5 +323,21 @@ public class AppController : ControllerBase
         }).ToListAsync();
         return Ok(categories);
     }
+    [HttpGet("creator-name/{slug}")]
+    [Authorize(Roles = "User,Admin")]
+    public async Task<IActionResult> GetCreatorName(string slug)
+    {
+        var eventItem = await _dbContext.Events.AsNoTracking().FirstOrDefaultAsync(e => e.Slug == slug);
+        if (eventItem == null)
+        {
+            return BadRequest("Event not found");
+        }
+        var creator = await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == eventItem.CreatorId);
+        if (creator == null)
+        {
+            return BadRequest("Creator not found");
+        }
+        return Ok(new { name = creator.Username });
+    }
 
 }

@@ -9,13 +9,13 @@ export interface EventProp {
     isEditable?: boolean;
     onSave?: (updatedEvent: Event) => void;
     onDelete?: () => void;
+    creator?: string | null;
 }
 
-const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete}) => {
+const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete, creator}) => {
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const [tempEvent, setTempEvent] = useState<Event>(event);
-    console.log(event);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -168,6 +168,12 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete
                                 ) : (
                                     <div className="fs-5 fw-medium">{formatDate(event.endAt)}</div>
                                 )}
+                            </div>
+                        </div>
+                        <div>
+                            <div className="p-3 bg-light rounded shadow-sm mt-3">
+                                <label className="d-block text-uppercase text-muted fw-bold small">Organizer </label>
+                                <div className="fs-5 fw-medium">{creator || "Unknown"}</div>
                             </div>
                         </div>
                     </div>

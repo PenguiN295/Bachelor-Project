@@ -10,7 +10,7 @@ import { useEvents } from "../hooks/useEvents";
 
 const ViewUserPage: React.FC= () => {
     const { userId } = useParams<{ userId: string }>();
-    const { events, loading } = useEvents( userId ? { userId } : undefined);
+    const { events, loading } = useEvents( userId );
     return <>
         <div className="container mt-5">
             <main className="col-md-9">

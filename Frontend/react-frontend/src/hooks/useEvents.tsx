@@ -14,7 +14,7 @@ const defaultFilters: EventFilter = {
     location: ''
 };
 
-export const useEvents = (userId?: string) => {
+export const useEvents = (userId?: string, createdByMe?: boolean) => {
     const { token, logout } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -31,9 +31,9 @@ export const useEvents = (userId?: string) => {
     const debouncedLocation = useDebounce(filters.location, 500);
 
     const { data: events = [], isLoading } = useQuery({
-        queryKey: ["events", { ...filters, search: debouncedSearch, location: debouncedLocation, userId }],
+        queryKey: ["events", { ...filters, search: debouncedSearch, location: debouncedLocation, userId, createdByMe }],
         queryFn: async (): Promise<Event[]> => {
-            const response = await fetch(`${url}/events?${searchParams.toString()}${userId ? `&userId=${userId}` : ''}`, {
+            const response = await fetch(`${url}/events?${searchParams.toString()}${userId ? `&userId=${userId}` : ''}${createdByMe ? `&createdByMe=${createdByMe}` : ''}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             

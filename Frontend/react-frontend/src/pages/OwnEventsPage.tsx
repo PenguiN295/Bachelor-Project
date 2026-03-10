@@ -5,7 +5,8 @@ import { useEvents } from "../hooks/useEvents"
 
 
 const OwnEventsPage: React.FC = () => {
-    const { events, loading } = useEvents({ createdByMe: true });
+    const createdByMe = true;
+    const { events, loading } = useEvents( createdByMe ? undefined : '', createdByMe );
     return <>
     <div className="container mt-5">
         <main className="col-md-9">

@@ -1,3 +1,7 @@
+using System.ComponentModel.DataAnnotations.Schema;
+using NetTopologySuite.Geometries;
+
+
 namespace backend.Data.Entities;
 
 public class Event
@@ -8,11 +12,13 @@ public class Event
     public string Slug { get; set; } = null!;
     public DateTimeOffset StartAt { get; set; }
     public DateTimeOffset EndAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
     public int MaxAttendees { get; set; }
     public int CurrentAttendees { get; set; }
     public decimal Price { get; set; }
-    public double Latitude { get; set; }
-    public double Longitude { get; set; }
+    [Column(TypeName = "geometry(Point, 4326)")]
+    public Point Location { get; set; } = null!;
     public string City { get; set; } = null!;
     public string County { get; set; } = null!;
 

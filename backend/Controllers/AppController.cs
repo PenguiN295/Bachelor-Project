@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using backend.Interfaces;
 using Mapster;
+using NetTopologySuite.Geometries;
 
 [ApiController]
 
@@ -51,14 +52,18 @@ public class AppController : ControllerBase
             MaxAttendees = newEvent.MaxAttendees,
             CurrentAttendees = 0,
             Price = newEvent.Price,
-            Latitude = newEvent.Latitude,
-            Longitude = newEvent.Longitude,
+            Location = new Point(newEvent.Longitude, newEvent.Latitude)
+            {
+                SRID = 4326
+            },
             City = newEvent.City,
             County = newEvent.County,
             CreatorId = userGuid,
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
             ImageUrl = imageUrl
         };
-
+        if(newEvent.CategoryIds != null)
         foreach (var id in newEvent.CategoryIds)
         {
             var trackedCategory = _dbContext.Categories.Local.FirstOrDefault(c => c.Id == id);
@@ -82,13 +87,15 @@ public class AppController : ControllerBase
     [Authorize(Roles = "User")]
     public async Task<IActionResult> GetEventBySlug(string slug)
     {
-        var eventEntity = await _dbContext.Events.AsNoTracking().FirstOrDefaultAsync(e => e.Slug == slug);
+        var eventEntity =  _dbContext.Events.AsNoTracking().Where(e=>e.Slug == slug).ProjectToType<EventResponse>().FirstOrDefault();
         if (eventEntity == null)
         {
             return NotFound("Event not found");
         }
         if (eventEntity.ImageUrl != null)
+        {
             eventEntity.ImageUrl = _photoService.BuildUrl(eventEntity.ImageUrl);
+        }
         return Ok(eventEntity);
     }
     [HttpGet("events")]
@@ -144,8 +151,30 @@ public class AppController : ControllerBase
         int pageSize = 50;
         int skip = (filter.Page - 1) * pageSize;
 
-        var filteredResults = await query.OrderByDescending(e => e.StartAt).Skip(skip).Take(pageSize).ToListAsync();
-        filteredResults.ForEach(e => e.ImageUrl = e.ImageUrl != null ? e.ImageUrl = _photoService.BuildUrl(e.ImageUrl) : null);
+        var filteredResults = await query.OrderByDescending(e => e.StartAt)
+        .Skip(skip)
+        .Take(pageSize)
+        .Select(e => new EventResponse
+        {
+            Id = e.Id,
+            Title = e.Title,
+            Description = e.Description,
+            Slug = e.Slug,
+            StartAt = e.StartAt,
+            EndAt = e.EndAt,
+            CreatedAt = e.CreatedAt,
+            UpdatedAt = e.UpdatedAt,
+            MaxAttendees = e.MaxAttendees,
+            CurrentAttendees = e.CurrentAttendees,
+            Price = e.Price,
+            Latitude = e.Location.Y,
+            Longitude = e.Location.X,
+            City = e.City,
+            County = e.County,
+            ImageUrl = e.ImageUrl != null ? _photoService.BuildUrl(e.ImageUrl) : null,
+            CreatorId = e.CreatorId,
+            Categories = e.Categories
+        }).ToListAsync();
         return Ok(filteredResults);
     }
     [HttpGet("user-info")]
@@ -278,7 +307,7 @@ public class AppController : ControllerBase
         eventRequest.CreatorId = userGuid;
         eventRequest.ImageFile = null;
         eventRequest.CurrentAttendees = existingEvent.CurrentAttendees;
-        if(eventRequest.Title != existingEvent.Title)
+        if (eventRequest.Title != existingEvent.Title)
         {
 
             eventRequest.Slug = SlugService.Generate(eventRequest.Title, existingEvent.Id);
@@ -350,7 +379,7 @@ public class AppController : ControllerBase
         {
             return BadRequest("Creator not found");
         }
-        return Ok(new { name = creator.Username , id = creator.Id});
+        return Ok(new { name = creator.Username, id = creator.Id });
     }
 
 }

@@ -41,7 +41,8 @@ export const useEvents = (userId?: string, createdByMe?: boolean) => {
                 if (response.status === 401) { logout(); throw new Error("Unauthorized"); }
                 throw new Error("Fetch failed");
             }
-            return response.json();
+            const data = await response.json();
+            return data
         },
         enabled: !!token,
     });

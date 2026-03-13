@@ -36,6 +36,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 TypeAdapterConfig<Event, EventResponse>.NewConfig()
     .Map(dest => dest.Longitude, src => src.Location.X)
     .Map(dest => dest.Latitude, src => src.Location.Y);
+
     
 builder.Services.AddCors(options =>
 { 

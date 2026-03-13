@@ -121,7 +121,8 @@ public class AppController : ControllerBase
 
         if (filter.StartDate != default)
         {
-            query = query.Where(e => e.StartAt == filter.StartDate.Date);
+            var utcDate = DateTime.SpecifyKind(filter.StartDate.Date, DateTimeKind.Utc);
+            query = query.Where(e=> e.StartAt >= utcDate);
         }
         if (filter.Price > 0)
         {
@@ -153,28 +154,7 @@ public class AppController : ControllerBase
 
         var filteredResults = await query.OrderByDescending(e => e.StartAt)
         .Skip(skip)
-        .Take(pageSize)
-        .Select(e => new EventResponse
-        {
-            Id = e.Id,
-            Title = e.Title,
-            Description = e.Description,
-            Slug = e.Slug,
-            StartAt = e.StartAt,
-            EndAt = e.EndAt,
-            CreatedAt = e.CreatedAt,
-            UpdatedAt = e.UpdatedAt,
-            MaxAttendees = e.MaxAttendees,
-            CurrentAttendees = e.CurrentAttendees,
-            Price = e.Price,
-            Latitude = e.Location.Y,
-            Longitude = e.Location.X,
-            City = e.City,
-            County = e.County,
-            ImageUrl = e.ImageUrl != null ? _photoService.BuildUrl(e.ImageUrl) : null,
-            CreatorId = e.CreatorId,
-            Categories = e.Categories
-        }).ToListAsync();
+        .Take(pageSize).ProjectToType<EventResponse>().ToListAsync();
         return Ok(filteredResults);
     }
     [HttpGet("user-info")]

@@ -24,6 +24,8 @@ public class Event
 
     public string? ImageUrl { get; set; }
     public Guid CreatorId { get; set; }
+    public Guid? CommunityId { get; set; }
+    public Community? Community { get; set; }
     public ICollection<Category> Categories { get; set; } = new HashSet<Category>();
 }
 

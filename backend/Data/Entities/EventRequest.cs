@@ -18,6 +18,7 @@ public class EventRequest
     public string County { get; set; } = null!;
     public IFormFile? ImageFile { get; set; }
     public Guid CreatorId { get; set; }
+    public Guid? CommunityId { get; set; }
 
     public List<Guid>? CategoryIds { get; set; } = new List<Guid>();
 }

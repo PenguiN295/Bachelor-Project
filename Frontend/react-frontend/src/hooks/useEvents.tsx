@@ -14,7 +14,7 @@ const defaultFilters: EventFilter = {
     location: ''
 };
 
-export const useEvents = (userId?: string, createdByMe?: boolean) => {
+export const useEvents = (userId?: string, createdByMe?: boolean, communityId?: string) => {
     const { token, logout } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -31,9 +31,14 @@ export const useEvents = (userId?: string, createdByMe?: boolean) => {
     const debouncedLocation = useDebounce(filters.location, 500);
 
     const { data: events = [], isLoading } = useQuery({
-        queryKey: ["events", { ...filters, search: debouncedSearch, location: debouncedLocation, userId, createdByMe }],
+        queryKey: ["events", { ...filters, search: debouncedSearch, location: debouncedLocation, userId, createdByMe, communityId }],
         queryFn: async (): Promise<Event[]> => {
-            const response = await fetch(`${url}/events?${searchParams.toString()}${userId ? `&userId=${userId}` : ''}${createdByMe ? `&createdByMe=${createdByMe}` : ''}`, {
+            const params = new URLSearchParams(searchParams.toString());
+            if (userId) params.set('userId', userId);
+            if (createdByMe) params.set('createdByMe', String(createdByMe));
+            if (communityId) params.set('communityId', communityId);
+
+            const response = await fetch(`${url}/events?${params.toString()}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             

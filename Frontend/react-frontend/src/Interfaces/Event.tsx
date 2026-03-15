@@ -14,4 +14,5 @@ export default interface Event {
   county: string;
   imageUrl: string;
   categoryIds: string[];
+  communityId?: string;
 }

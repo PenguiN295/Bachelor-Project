@@ -17,6 +17,10 @@ import 'leaflet/dist/leaflet.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import ViewUserPage from './pages/ViewUserPage';
+import CommunitiesPage from './pages/CommunitiesPage';
+import CommunityPage from './pages/CommunityPage';
+import CreateCommunityPage from './pages/CreateCommunityPage';
+
 const queryClient = new QueryClient();
 
 const App: React.FC = () => {
@@ -38,7 +42,9 @@ const App: React.FC = () => {
               <Route path="/Event/:slug" element={<EventPage />} />
               <Route path="/own-events" element={<OwnEventsPage />} />
               <Route path="/profile/:userId" element={<ViewUserPage />} />
-              
+              <Route path="/communities" element={<CommunitiesPage />} />
+              <Route path="/communities/create" element={<CreateCommunityPage />} />
+              <Route path="/community/:slug" element={<CommunityPage />} />
             </Route>
           </Route>
 

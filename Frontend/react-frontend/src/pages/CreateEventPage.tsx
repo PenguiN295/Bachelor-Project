@@ -1,8 +1,6 @@
-import React from "react"
-
 import { type ChangeEvent, useState } from "react";
 import type Event from '../Interfaces/Event'
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCreateEvent } from "../hooks/useCreateEvent";
 import MapComponent from "../components/MapComponent";
 import { toast } from "sonner";
@@ -13,6 +11,8 @@ const CreateEventPage: React.FC = () => {
     const { createEvent, isPending, error } = useCreateEvent();
     const { categories } = useCategories();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const communityIdFromQuery = searchParams.get('communityId');
     const [file, setFile] = useState<File | null>(null);
 
     const [formData, setFormData] = useState<Event>({
@@ -31,6 +31,7 @@ const CreateEventPage: React.FC = () => {
         county: '',
         imageUrl: '',
         categoryIds: [],
+        communityId: communityIdFromQuery ?? undefined
     });
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
         const { name, value, type } = e.target;

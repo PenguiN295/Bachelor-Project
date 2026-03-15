@@ -12,5 +12,7 @@ public class AppDbContext : DbContext
     public DbSet<Event> Events { get; set; }
     public DbSet<EventSubscription> Subscriptions{ get; set; }
     public DbSet<Category> Categories { get; set; }
+    public DbSet<Community> Communities { get; set; }
+    public DbSet<CommunityMembership> Memberships { get; set; }
 
 }

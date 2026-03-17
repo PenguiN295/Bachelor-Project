@@ -4,6 +4,7 @@ import { useCommunity } from '../hooks/useCommunity';
 import { useEvents } from '../hooks/useEvents';
 import LoadingState from '../components/LoadingState';
 import EventCardList from '../components/EventCardList';
+import MemberList from '../components/MemberList';
 import noPhoto from '../assets/nophoto.svg';
 
 const CommunityPage: React.FC = () => {
@@ -91,7 +92,11 @@ const CommunityPage: React.FC = () => {
                             <hr className="my-4" />
 
                             <div className="row">
-                                <div className="col-md-8">
+                                <div className="col-md-3 mb-4 mb-md-0">
+                                    <MemberList slug={slug || ''} />
+                                </div>
+                                
+                                <div className="col-md-6">
                                     <h4 className="fw-bold mb-3">About</h4>
                                     <p className="lead" style={{ whiteSpace: 'pre-wrap' }}>
                                         {community.description}
@@ -122,7 +127,7 @@ const CommunityPage: React.FC = () => {
                                     </div>
                                 </div>
                                 
-                                <div className="col-md-4 mt-4 mt-md-0">
+                                <div className="col-md-3">
                                     <div className="card bg-light border-0">
                                         <div className="card-body">
                                             <h5 className="fw-bold mb-3">Community Rules</h5>

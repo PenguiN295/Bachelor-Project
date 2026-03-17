@@ -17,7 +17,7 @@ const EventPage: React.FC = () => {
                 isOwner ? (
                     <div>
                         <EventComponent event={event} isEditable={true} 
-                        onSave={updateEvent} onDelete={deleteEvent} creator={creator?.name} creatorId={creator?.id} />
+                        onSave={updateEvent} onDelete={deleteEvent} creator={creator?.name} creatorId={creator?.id} creatorPhoto={creator?.photo} />
                         <div className="container py-5">
                             <MapComponent position={{ lat: event.latitude, lng: event.longitude }} />
                             
@@ -26,7 +26,7 @@ const EventPage: React.FC = () => {
 
                 ) : (
                     <div>
-                        <EventComponent event={event} creator={creator?.name} creatorId={creator?.id} />
+                        <EventComponent event={event} creator={creator?.name} creatorId={creator?.id} creatorPhoto={creator?.photo} />
 
                         <div className="container py-5">
                             <SubscribeComponent event={event} isSubscribed={isSubscribed} />

@@ -335,6 +335,11 @@ public class EventController : ControllerBase
         var creator = await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == eventItem.CreatorId);
         if (creator == null) return NotFound();
 
-        return Ok(new { name = creator.Username, id = creator.Id });
+        return Ok(new 
+        { 
+            name = creator.Username, 
+            id = creator.Id, 
+            photo = creator.Photo != null ? _photoService.BuildUrl(creator.Photo) : null 
+        });
     }
 }

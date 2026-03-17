@@ -6,14 +6,15 @@ import { useNavigate } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 interface AuthContextType {
+    userId: string | null;
     username: string | null;
+    photo: string | null;
     token: string | null;
     login: (token: string) => void;
     logout: () => void;
     register: (newToken: string) => void;
     updateUser: (newUsername: string) => void;
     loading: boolean
-
 }
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -21,9 +22,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
-    const { data: username = '', isLoading } = useQuery({
+    const { data: userInfo, isLoading } = useQuery({
         queryKey: ["userInfo", token],
-        queryFn: async (): Promise<string> => {
+        queryFn: async (): Promise<{ username: string, id: string, photo: string | null }> => {
             const response = await fetch(`${url}/user-info`, {
                 method: 'GET',
                 headers: {
@@ -32,15 +33,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
             });
             if (!response.ok) throw new Error('Failed to fetch user info');
-            const data = await response.json();
-            return data.username;
-
+            return response.json();
         },
         enabled: !!token,
         retry: false,
     }
     )
-
 
     const login = async (newToken: string) => {
         localStorage.setItem('token', newToken);
@@ -58,11 +56,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setToken(newToken);
     };
     const updateUser = (newUsername: string) => {
-        queryClient.setQueryData(["userInfo", token], newUsername);
+        queryClient.setQueryData(["userInfo", token], (old: any) => ({ ...old, username: newUsername }));
         toast.success("Username updated successfully")
     };
     return (
-        <AuthContext.Provider value={{ username, token, login, logout, register, loading: isLoading, updateUser }}>
+        <AuthContext.Provider value={{ 
+            userId: userInfo?.id || null,
+            username: userInfo?.username || null, 
+            photo: userInfo?.photo || null,
+            token, 
+            login, 
+            logout, 
+            register, 
+            loading: isLoading, 
+            updateUser 
+        }}>
             {children}
         </AuthContext.Provider>
     );

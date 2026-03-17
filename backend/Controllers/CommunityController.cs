@@ -202,4 +202,40 @@ public class CommunityController : ControllerBase
 
         return Ok("Left successfully");
     }
+
+    [HttpGet("{slug}/members")]
+    [Authorize(Roles = "User,Admin")]
+    public async Task<IActionResult> GetCommunityMembers(string slug)
+    {
+        var community = await _dbContext.Communities
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Slug == slug);
+
+        if (community == null) return NotFound("Community not found");
+
+        var members = await _dbContext.Memberships
+            .AsNoTracking()
+            .Where(m => m.CommunityId == community.Id)
+            .Join(_dbContext.Users,
+                m => m.UserId,
+                u => u.Id,
+                (m, u) => new UserResponse
+                {
+                    Id = u.Id,
+                    Username = u.Username,
+                    Photo = u.Photo,
+                    Role = m.Role
+                })
+            .ToListAsync();
+
+        foreach (var m in members)
+        {
+            if (m.Photo != null)
+            {
+                m.Photo = _photoService.BuildUrl(m.Photo);
+            }
+        }
+
+        return Ok(members);
+    }
 }

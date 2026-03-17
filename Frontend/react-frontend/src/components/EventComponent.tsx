@@ -3,6 +3,7 @@ import { useState } from "react";
 import type Event from "../Interfaces/Event"
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import UserComponent from "./UserComponent";
 
 export interface EventProp {
     event: Event;  
@@ -11,23 +12,15 @@ export interface EventProp {
     onDelete?: () => void;
     creator?: string | null;
     creatorId?: string | null;
+    creatorPhoto?: string | null;
 }
 
-const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete, creator, creatorId }) => {
+const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete, creator, creatorId, creatorPhoto }) => {
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const [tempEvent, setTempEvent] = useState<Event>(event);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const handleCreatorClick = () => {
-        if(creatorId){
-            if(isEditable)
-            {
-                navigate('/profile');
-                return;
-            }
-            navigate(`/profile/${creatorId}`);
-        }
-    };
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         
@@ -183,10 +176,19 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete
                         </div>
                         <div>
                             <div className="p-3 bg-light rounded shadow-sm mt-3">
-                                <label className="d-block text-uppercase text-muted fw-bold small">Organizer </label>
-                                <button className="fs-5 fw-medium " onClick={handleCreatorClick}>
-                                    {creator || "Unknown"}
-                                </button>
+                                <label className="d-block text-uppercase text-muted fw-bold small mb-2">Organizer </label>
+                                {creatorId && creator ? (
+                                    <div style={{ maxWidth: '250px' }}>
+                                        <UserComponent 
+                                            id={creatorId} 
+                                            username={creator} 
+                                            photo={creatorPhoto} 
+                                            isMe={isEditable} 
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="text-muted">Unknown</div>
+                                )}
                             </div>
                         </div>
                     </div>

@@ -1,18 +1,18 @@
 import { type ChangeEvent, useState } from "react";
 import type Event from '../Interfaces/Event'
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useCreateEvent } from "../hooks/useCreateEvent";
 import MapComponent from "../components/MapComponent";
 import { toast } from "sonner";
 import CategoryMultiSelect from "../components/CategoryMultiSelect";
 import { useCategories } from "../hooks/useCategories";
 
+
 const CreateEventPage: React.FC = () => {
     const { createEvent, isPending, error } = useCreateEvent();
     const { categories } = useCategories();
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-    const communityIdFromQuery = searchParams.get('communityId');
+    const { communityId }= useParams<{ communityId: string }>();
     const [file, setFile] = useState<File | null>(null);
 
     const [formData, setFormData] = useState<Event>({
@@ -31,7 +31,8 @@ const CreateEventPage: React.FC = () => {
         county: '',
         imageUrl: '',
         categoryIds: [],
-        communityId: communityIdFromQuery ?? undefined
+        communityId: communityId ?? undefined,
+        isPublic: true,
     });
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
         const { name, value, type } = e.target;
@@ -48,6 +49,13 @@ const CreateEventPage: React.FC = () => {
             longitude: pos.lng,
             city: pos.city ?? prev.city,
             county: pos.county ?? prev.county
+        }));
+    };
+    const handlePublicChange = (e: ChangeEvent<HTMLInputElement>): void => {
+        const { checked } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            isPublic: checked
         }));
     };
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,6 +97,19 @@ const CreateEventPage: React.FC = () => {
                         <label>Description</label>
                         <textarea name="description" value={formData.description} onChange={handleChange} />
                     </div>
+                    {!!communityId && (
+                    <div className="form-check">
+                        <input
+                            className="form-check-input"
+                            type="checkbox"
+                            id="publicCheck"
+                            checked={formData.isPublic}
+                            onChange={handlePublicChange}
+                        />
+                        <label className="form-check-label" htmlFor="publicCheck">
+                            Public Event
+                        </label>
+                    </div>)}
 
                     <div style={{ display: 'flex', gap: '10px' }}>
                         <div>

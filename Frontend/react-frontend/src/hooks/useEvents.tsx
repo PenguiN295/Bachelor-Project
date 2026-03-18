@@ -36,7 +36,14 @@ export const useEvents = (userId?: string, createdByMe?: boolean, communityId?: 
             const params = new URLSearchParams(searchParams.toString());
             if (userId) params.set('userId', userId);
             if (createdByMe) params.set('createdByMe', String(createdByMe));
-            if (communityId) params.set('communityId', communityId);
+            if (communityId)
+                { 
+                    params.set('communityId', communityId);
+                    params.set('seePrivate', 'true');
+            }else
+            {
+                params.set('seePrivate', 'false');
+            }
 
             const response = await fetch(`${url}/events?${params.toString()}`, {
                 headers: { Authorization: `Bearer ${token}` },

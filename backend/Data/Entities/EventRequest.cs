@@ -19,6 +19,6 @@ public class EventRequest
     public IFormFile? ImageFile { get; set; }
     public Guid CreatorId { get; set; }
     public Guid? CommunityId { get; set; }
-
+    public bool IsPublic { get; set; } = true;
     public List<Guid>? CategoryIds { get; set; } = new List<Guid>();
 }

@@ -64,7 +64,7 @@ const CommunityPage: React.FC = () => {
                                         <div className="btn-group">
                                             <button 
                                                 className="btn btn-outline-primary"
-                                                onClick={() => navigate(`/CreateEvent?communityId=${community.id}`)}
+                                                onClick={() => navigate(`/CreateEvent/${community.id}`)}
                                             >
                                                 <i className="bi bi-calendar-plus me-2"></i>Create Event
                                             </button>
@@ -117,7 +117,7 @@ const CommunityPage: React.FC = () => {
                                                 {community.isJoined && (
                                                     <button 
                                                         className="btn btn-link btn-sm mt-2"
-                                                        onClick={() => navigate('/CreateEvent', { state: { communityId: community.id } })}
+                                                        onClick={() => navigate(`/CreateEvent/${community!.id}`)}
                                                     >
                                                         Create the first one!
                                                     </button>

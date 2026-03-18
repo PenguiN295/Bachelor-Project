@@ -77,6 +77,7 @@ public class EventController : ControllerBase
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow,
             ImageUrl = imageUrl,
+            IsPublic = newEvent.IsPublic,
             CommunityId = newEvent.CommunityId
         };
 
@@ -137,7 +138,10 @@ public class EventController : ControllerBase
         {
             query = query.Where(e => e.CurrentAttendees < e.MaxAttendees);
         }
-
+        if (filter.SeePrivate == false)
+        {
+            query = query.Where(e => e.IsPublic);
+        }
         if (filter.CreatedByMe == true)
         {
             query = query.Where(e => e.CreatorId == userGuid);

@@ -15,4 +15,6 @@ export default interface Event {
   imageUrl: string;
   categoryIds: string[];
   communityId?: string;
+  isPublic?: boolean;
+  communitySlug?: string;
 }

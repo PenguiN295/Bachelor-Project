@@ -9,4 +9,5 @@ export interface EventFilter{
   createdByMe? : boolean;
   userId? : string;
   categoryIds? : string[];
+  seePrivate? : boolean;
 }

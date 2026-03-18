@@ -45,6 +45,7 @@ const App: React.FC = () => {
               <Route path="/communities" element={<CommunitiesPage />} />
               <Route path="/communities/create" element={<CreateCommunityPage />} />
               <Route path="/community/:slug" element={<CommunityPage />} />
+              <Route path="/CreateEvent/:communityId" element={<CreateEventPage />} />
             </Route>
           </Route>
 

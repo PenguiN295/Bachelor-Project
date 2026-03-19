@@ -33,6 +33,8 @@ export const useCommunity = (slug: string) => {
         onSuccess: () => {
             toast.success("Joined community!");
             queryClient.invalidateQueries({ queryKey: ["community", slug] });
+            queryClient.invalidateQueries({ queryKey: ["community-members", slug] });
+            queryClient.invalidateQueries({ queryKey: ["events"] });
             queryClient.invalidateQueries({ queryKey: ["communities"] });
         },
         onError: () => toast.error("Could not join community")
@@ -50,7 +52,9 @@ export const useCommunity = (slug: string) => {
         onSuccess: () => {
             toast.success("Left community!");
             queryClient.invalidateQueries({ queryKey: ["community", slug] });
+            queryClient.invalidateQueries({ queryKey: ["community-members", slug] });
             queryClient.invalidateQueries({ queryKey: ["communities"] });
+            queryClient.invalidateQueries({ queryKey: ["events"] });
         },
         onError: () => toast.error("Could not leave community")
     });

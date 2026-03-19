@@ -12,7 +12,7 @@ const CommunityPage: React.FC = () => {
     const navigate = useNavigate();
     const { community, loading, join, leave, isJoining, isLeaving } = useCommunity(slug || '');
     
-    const { events: communityEvents, loading: eventsLoading } = useEvents(undefined, undefined, community?.id);
+    const { events: communityEvents, loading: eventsLoading } = useEvents(undefined, undefined, community?.id, community?.isJoined);
 
     if (loading) return <div className="container mt-5"><LoadingState /></div>;
     if (!community) return (

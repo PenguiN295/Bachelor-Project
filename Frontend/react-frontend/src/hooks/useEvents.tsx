@@ -14,7 +14,7 @@ const defaultFilters: EventFilter = {
     location: ''
 };
 
-export const useEvents = (userId?: string, createdByMe?: boolean, communityId?: string) => {
+export const useEvents = (userId?: string, createdByMe?: boolean, communityId?: string, isMember?: boolean) => {
     const { token, logout } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -31,15 +31,17 @@ export const useEvents = (userId?: string, createdByMe?: boolean, communityId?: 
     const debouncedLocation = useDebounce(filters.location, 500);
 
     const { data: events = [], isLoading } = useQuery({
-        queryKey: ["events", { ...filters, search: debouncedSearch, location: debouncedLocation, userId, createdByMe, communityId }],
+        queryKey: ["events", { ...filters, search: debouncedSearch, location: debouncedLocation, userId, createdByMe, communityId, isMember }],
         queryFn: async (): Promise<Event[]> => {
-            const params = new URLSearchParams(searchParams.toString());
+            const params = new URLSearchParams(searchParams.toString());1
             if (userId) params.set('userId', userId);
             if (createdByMe) params.set('createdByMe', String(createdByMe));
             if (communityId)
                 { 
                     params.set('communityId', communityId);
-                    params.set('seePrivate', 'true');
+                    if(isMember)
+                        params.set('seePrivate', 'true');
+
             }else
             {
                 params.set('seePrivate', 'false');

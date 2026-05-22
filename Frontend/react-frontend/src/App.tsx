@@ -20,6 +20,8 @@ import ViewUserPage from './pages/ViewUserPage';
 import CommunitiesPage from './pages/CommunitiesPage';
 import CommunityPage from './pages/CommunityPage';
 import CreateCommunityPage from './pages/CreateCommunityPage';
+import PastEventsPage from './pages/PastEventsPage';
+import EventAnalyticsPage from './pages/EventAnalyticsPage';
 
 const queryClient = new QueryClient();
 
@@ -46,6 +48,8 @@ const App: React.FC = () => {
               <Route path="/communities/create" element={<CreateCommunityPage />} />
               <Route path="/community/:slug" element={<CommunityPage />} />
               <Route path="/CreateEvent/:communityId" element={<CreateEventPage />} />
+              <Route path="/past-events" element={<PastEventsPage />} />
+              <Route path="/event-analytics/:slug" element={<EventAnalyticsPage />} />
             </Route>
           </Route>
 

@@ -18,6 +18,10 @@ const UserDropDown: React.FC = () => {
         e.preventDefault();
         navigate('/own-events');
     };
+    const onPastEventsClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        navigate('/past-events');
+    };
   return(
      <div className="dropdown d-inline-block">
             <button className="btn btn-secondary dropdown-toggle w-100 d-flex justify-content-between align-items-center" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -36,6 +40,10 @@ const UserDropDown: React.FC = () => {
                       <button className="dropdown-item text-primary fw-semibold" onClick={onEventsClick}>
                         <i className="bi "></i>
                         My Events
+                    </button> 
+                    <button className="dropdown-item text-primary fw-semibold" onClick={onPastEventsClick}>
+                        <i className="bi bi-clock-history"></i>
+                        Past Events
                     </button> 
                 </li>
             </ul>

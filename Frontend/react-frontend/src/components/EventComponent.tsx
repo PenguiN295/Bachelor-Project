@@ -4,10 +4,12 @@ import type Event from "../Interfaces/Event"
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import UserComponent from "./UserComponent";
+import { formatDateTime } from "../utils/dateUtils";
 
 export interface EventProp {
-    event: Event;  
+    event: Event;
     isEditable?: boolean;
+    isPast?: boolean;
     onSave?: (updatedEvent: Event) => void;
     onDelete?: () => void;
     creator?: string | null;
@@ -15,7 +17,7 @@ export interface EventProp {
     creatorPhoto?: string | null;
 }
 
-const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete, creator, creatorId, creatorPhoto }) => {
+const EventComponent: React.FC<EventProp> = ({ event, isEditable, isPast, onSave, onDelete, creator, creatorId, creatorPhoto }) => {
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const [tempEvent, setTempEvent] = useState<Event>(event);
@@ -23,15 +25,15 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        
+
         setTempEvent(prev => ({ ...prev, [name]: name === 'price' || name === 'maxAttendees' ? Number(value) : value }));
     };
 
     const handleSave = () => {
         onSave?.(tempEvent);
-        setIsEditing(false); 
+        setIsEditing(false);
     };
-    const handleDelete = () =>{
+    const handleDelete = () => {
         setShowDeleteConfirm(true);
     };
 
@@ -48,30 +50,21 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete
     };
 
     const handleCancel = () => {
-        setTempEvent({ ...event }); 
+        setTempEvent({ ...event });
         setIsEditing(false);
-        
+
     };
-    const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-    });
-};
-   return (
+
+    return (
         <div className="container py-5">
             <div className="d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
                 <div className="flex-grow-1 me-4">
                     {isEditing ? (
-                        <input 
-                            className="form-control form-control-lg fw-bold mb-2" 
-                            name="title" 
-                            value={tempEvent.title} 
-                            onChange={handleInputChange} 
+                        <input
+                            className="form-control form-control-lg fw-bold mb-2"
+                            name="title"
+                            value={tempEvent.title}
+                            onChange={handleInputChange}
                         />
                     ) : (
                         <h1 className="display-5 fw-bold text-dark">{event.title}</h1>
@@ -97,10 +90,10 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete
                         </div>
                     ) : (
                         <div className="badge bg-primary p-3 fs-4 shadow-sm mb-3">
-                           {event.price === 0 ? "Free" : `$${event.price.toFixed(2)}`}
+                            {event.price === 0 ? "Free" : `$${event.price.toFixed(2)}`}
                         </div>
                     )}
-                    
+
                     {isEditable && (
                         <div className="d-flex gap-2 justify-content-end">
                             {isEditing ? (
@@ -110,9 +103,17 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete
                                     <button className="btn btn-danger" onClick={handleDelete}>Delete</button>
                                 </>
                             ) : (
-                                <button className="btn btn-outline-primary" onClick={() => setIsEditing(true)}>
-                                    <i className="bi bi-pencil me-1"></i> Edit Event
-                                </button>
+                                <>
+                                    {isPast ? (
+                                        <button className="btn btn-primary" onClick={() => navigate(`/event-analytics/${event.slug}`)}>
+                                            <i className="bi bi-graph-up me-1"></i> Analytics
+                                        </button>
+                                    ) : (
+                                        <button className="btn btn-outline-primary" onClick={() => setIsEditing(true)}>
+                                            <i className="bi bi-pencil me-1"></i> Edit Event
+                                        </button>
+                                    )}
+                                </>
                             )}
                         </div>
                     )}
@@ -141,12 +142,12 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete
                     <section className="mb-5">
                         <h3 className="h5 text-uppercase fw-bold text-primary border-start border-4 border-primary ps-3 mb-3">Description</h3>
                         {isEditing ? (
-                            <textarea 
-                                className="form-control" 
-                                name="description" 
-                                rows={8} 
-                                value={tempEvent.description} 
-                                onChange={handleInputChange} 
+                            <textarea
+                                className="form-control"
+                                name="description"
+                                rows={8}
+                                value={tempEvent.description}
+                                onChange={handleInputChange}
                             />
                         ) : (
                             <p className="lead text-secondary lh-lg">{event.description}</p>
@@ -160,7 +161,7 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete
                                 {isEditing ? (
                                     <input type="datetime-local" name="startAt" className="form-control mt-2" value={tempEvent.startAt} onChange={handleInputChange} />
                                 ) : (
-                                    <div className="fs-5 fw-medium">{formatDate(event.startAt)}</div>
+                                    <div className="fs-5 fw-medium">{formatDateTime(event.startAt)}</div>
                                 )}
                             </div>
                         </div>
@@ -170,7 +171,7 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete
                                 {isEditing ? (
                                     <input type="datetime-local" name="endAt" className="form-control mt-2" value={tempEvent.endAt} onChange={handleInputChange} />
                                 ) : (
-                                    <div className="fs-5 fw-medium">{formatDate(event.endAt)}</div>
+                                    <div className="fs-5 fw-medium">{formatDateTime(event.endAt)}</div>
                                 )}
                             </div>
                         </div>
@@ -179,11 +180,11 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable,onSave,onDelete
                                 <label className="d-block text-uppercase text-muted fw-bold small mb-2">Organizer </label>
                                 {creatorId && creator ? (
                                     <div style={{ maxWidth: '250px' }}>
-                                        <UserComponent 
-                                            id={creatorId} 
-                                            username={creator} 
-                                            photo={creatorPhoto} 
-                                            isMe={isEditable} 
+                                        <UserComponent
+                                            id={creatorId}
+                                            username={creator}
+                                            photo={creatorPhoto}
+                                            isMe={isEditable}
                                         />
                                     </div>
                                 ) : (

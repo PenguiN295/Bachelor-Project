@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useCommunities } from '../hooks/useCommunities';
-import CommunityListItem from '../components/CommunityListItem';
+import CommunityCardList from '../components/CommunityCardList';
 import LoadingState from '../components/LoadingState';
 import { useNavigate } from 'react-router-dom';
 
@@ -53,11 +53,7 @@ const CommunitiesPage: React.FC = () => {
             {loading ? (
                 <LoadingState />
             ) : filteredCommunities.length > 0 ? (
-                <div className="community-list mt-3">
-                    {filteredCommunities.map(community => (
-                        <CommunityListItem key={community.id} community={community} />
-                    ))}
-                </div>
+                <CommunityCardList communities={filteredCommunities} />
             ) : (
                 <div className="text-center py-5">
                     <div className="mb-3">

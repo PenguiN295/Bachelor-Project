@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import type Community from '../Interfaces/Community';
 import noPhoto from '../assets/nophoto.svg';
+import { formatDate } from '../utils/dateUtils';
 
 interface CommunityListItemProps {
     community: Community;
@@ -40,7 +41,7 @@ const CommunityListItem: React.FC<CommunityListItemProps> = ({ community }) => {
                         </p>
                         <div className="d-flex gap-3 text-muted small">
                             <span><i className="bi bi-people me-1"></i>{community.memberCount} members</span>
-                            <span><i className="bi bi-calendar3 me-1"></i>Created {new Date(community.createdAt).toLocaleDateString()}</span>
+                            <span><i className="bi bi-calendar3 me-1"></i>Created {formatDate(community.createdAt)}</span>
                         </div>
                     </div>
                 </div>

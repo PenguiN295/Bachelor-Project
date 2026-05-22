@@ -6,6 +6,7 @@ import LoadingState from '../components/LoadingState';
 import EventCardList from '../components/EventCardList';
 import MemberList from '../components/MemberList';
 import noPhoto from '../assets/nophoto.svg';
+import { formatDate } from '../utils/dateUtils';
 
 const CommunityPage: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -56,7 +57,7 @@ const CommunityPage: React.FC = () => {
                                     <h1 className="fw-bold mb-1">{community.name}</h1>
                                     <p className="text-muted">
                                         <i className="bi bi-people-fill me-2"></i>
-                                        {community.memberCount} members • Created {new Date(community.createdAt).toLocaleDateString()}
+                                        {community.memberCount} members • Created {formatDate(community.createdAt)}
                                     </p>
                                 </div>
                                 <div className="mt-3 mt-md-0">

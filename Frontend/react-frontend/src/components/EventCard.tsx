@@ -2,6 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import type Event from '../Interfaces/Event';
 import noPhoto from '../assets/nophoto.svg';
+import { formatDate } from '../utils/dateUtils';
 interface EventCardProps {
     event: Event;
 }
@@ -37,19 +38,11 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
                     </p>
                     <p className="card-text text-muted small">
                         <i className="bi bi-calendar-event me-1"></i>
-                        {new Date(event.startAt).toLocaleDateString('en-US', {
-                            weekday: 'short',
-                            month: 'short',
-                            day: 'numeric'
-                        })}
+                        {formatDate(event.startAt)}
                         {event.startAt !== event.endAt && (
                             <>
                                 {" — "}
-                                {new Date(event.endAt).toLocaleDateString('en-US', {
-                                    weekday: 'short',
-                                    month: 'short',
-                                    day: 'numeric'
-                                })}
+                                {formatDate(event.endAt)}
                             </>
                         )}
                     </p>

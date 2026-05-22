@@ -9,6 +9,8 @@ import MapComponent from "../components/MapComponent";
 const EventPage: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
     const { event, loading, isOwner, isSubscribed, updateEvent, deleteEvent, creator } = useEvent(slug!);
+    const isPast = event ? new Date(event.endAt) < new Date() : false;
+
     return <>
         <div className=" bg-light min-vh-100">
             {loading ? (
@@ -16,8 +18,16 @@ const EventPage: React.FC = () => {
             ) : event ? (
                 isOwner ? (
                     <div>
-                        <EventComponent event={event} isEditable={true} 
-                        onSave={updateEvent} onDelete={deleteEvent} creator={creator?.name} creatorId={creator?.id} creatorPhoto={creator?.photo} />
+                        <EventComponent 
+                            event={event} 
+                            isEditable={true} 
+                            isPast={isPast}
+                            onSave={updateEvent} 
+                            onDelete={deleteEvent} 
+                            creator={creator?.name} 
+                            creatorId={creator?.id} 
+                            creatorPhoto={creator?.photo} 
+                        />
                         <div className="container py-5">
                             <MapComponent position={{ lat: event.latitude, lng: event.longitude }} />
                             

@@ -142,6 +142,19 @@ public class EventController : ControllerBase
         {
             query = query.Where(e => e.IsPublic);
         }
+        if (filter.IsPast == true)
+        {
+            query = query.Where(e => e.EndAt < DateTimeOffset.UtcNow);
+        }
+        else if (filter.StartDate == default)
+        {
+             // If not asking for past events and no specific start date, default to showing future events
+             // Unless searching for something specific that might include past? 
+             // Actually, usually users want future events unless specified.
+             // But let's keep it flexible. If IsPast is false, we might still want to see everything 
+             // if StartDate is default.
+        }
+
         if (filter.CreatedByMe == true)
         {
             query = query.Where(e => e.CreatorId == userGuid);
@@ -273,6 +286,11 @@ public class EventController : ControllerBase
         var ev = await _dbContext.Events.FirstOrDefaultAsync(e => e.Id == sr.EventId);
         if (ev == null) return NotFound();
 
+        if (sr.Subscribe && ev.EndAt < DateTimeOffset.UtcNow)
+        {
+            return BadRequest("Cannot subscribe to a past event.");
+        }
+
         var existingSub = await _dbContext.Subscriptions
             .FirstOrDefaultAsync(s => s.UserId == userGuid && s.EventId == ev.Id);
 
@@ -286,16 +304,24 @@ public class EventController : ControllerBase
                 UserId = userGuid,
                 EventId = ev.Id
             });
+
+            await _dbContext.SaveChangesAsync();
+
+            await _dbContext.Events
+                .Where(e => e.Id == ev.Id)
+                .ExecuteUpdateAsync(s => s.SetProperty(e => e.CurrentAttendees, e => e.CurrentAttendees + 1));
         }
         else
         {
             if (existingSub == null) return BadRequest("Not subscribed");
             _dbContext.Subscriptions.Remove(existingSub);
-        }
 
-        await _dbContext.SaveChangesAsync();
-        ev.CurrentAttendees = await _dbContext.Subscriptions.CountAsync(s => s.EventId == ev.Id);
-        await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
+
+            await _dbContext.Events
+                .Where(e => e.Id == ev.Id)
+                .ExecuteUpdateAsync(s => s.SetProperty(e => e.CurrentAttendees, e => e.CurrentAttendees - 1));
+        }
 
         return Ok(new { status = sr.Subscribe ? "Subscribed" : "Unsubscribed" });
     }
@@ -345,5 +371,33 @@ public class EventController : ControllerBase
             id = creator.Id, 
             photo = creator.Photo != null ? _photoService.BuildUrl(creator.Photo) : null 
         });
+    }
+
+    [HttpGet("event/{slug}/analytics")]
+    [Authorize(Roles = "User")]
+    public async Task<IActionResult> GetEventAnalytics(string slug)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdClaim, out var userGuid)) return Unauthorized();
+
+        var ev = await _dbContext.Events
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Slug == slug);
+
+        if (ev == null) return NotFound("Event not found");
+
+        if (ev.CreatorId != userGuid) return Forbid("You are not the creator of this event");
+
+        var totalSubscribers = await _dbContext.Subscriptions.CountAsync(s => s.EventId == ev.Id);
+        
+        var analytics = new EventAnalyticsResponse
+        {
+            TotalSubscribers = totalSubscribers,
+            MaxCapacity = ev.MaxAttendees,
+            AttendanceRate = ev.MaxAttendees > 0 ? (double)totalSubscribers / ev.MaxAttendees * 100 : 0,
+            TotalRevenue = totalSubscribers * ev.Price
+        };
+
+        return Ok(analytics);
     }
 }

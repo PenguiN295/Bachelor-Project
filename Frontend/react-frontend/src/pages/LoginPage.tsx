@@ -45,7 +45,7 @@ const LoginPage: React.FC = () => {
               disabled={loading}
               value={credentials.password}
               onChange={handleChange}
-            />
+            />  
           </div>
           <button type="submit" className="btn btn-primary w-100" disabled={loading} >
             {loading ? 'Authenticating...' : 'Login'}

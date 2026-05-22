@@ -13,7 +13,8 @@ interface SubscribeProp {
 const SubscribeComponent: React.FC<SubscribeProp> = ({ isSubscribed, event: { id,
     maxAttendees,
     currentAttendees,
-    slug
+    slug,
+    endAt
 } }) => {
     const { token } = useAuth();
     const queryClient = useQueryClient();
@@ -56,15 +57,16 @@ const SubscribeComponent: React.FC<SubscribeProp> = ({ isSubscribed, event: { id
     });
 
     const isFull = currentAttendees >= maxAttendees;
+    const isPast = new Date(endAt) < new Date();
 
     return <>
 
        <button
-            className={`btn ${isSubscribed ? "btn-danger" : "btn-primary"} w-100 fw-semibold`}
-            disabled={!isSubscribed && isFull} 
+            className={`btn ${isPast ? "btn-secondary" : isSubscribed ? "btn-danger" : "btn-primary"} w-100 fw-semibold`}
+            disabled={(!isSubscribed && isFull) || isPast} 
             onClick={() => mutate(!isSubscribed)}
         >
-            {isSubscribed ? "Unsubscribe" : isFull ? "Sold Out" : "Register Now"}
+            {isPast ? "Event Finished" : isSubscribed ? "Unsubscribe" : isFull ? "Sold Out" : "Register Now"}
         </button>
 
     </>

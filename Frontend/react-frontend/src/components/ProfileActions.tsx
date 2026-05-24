@@ -54,7 +54,13 @@ const ProfileActions: React.FC<{ modifyUser: 'username' | 'password' }> = ({ mod
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const payload: any = {};
-        if (modifyUser === 'username') payload.Username = formData.username;
+        if (modifyUser === 'username') {
+            if (formData.username.trim().length < 3) {
+                toast.error("Username must be at least 3 characters long");
+                return;
+            }
+            payload.Username = formData.username;
+        }
         if (modifyUser === 'password') {
             payload.Password = formData.password;
             if (formData.password !== formData.confirmPassword ) {
@@ -66,7 +72,6 @@ const ProfileActions: React.FC<{ modifyUser: 'username' | 'password' }> = ({ mod
                 return;
             }
         }
-
 
         mutation.mutate(payload);
     };

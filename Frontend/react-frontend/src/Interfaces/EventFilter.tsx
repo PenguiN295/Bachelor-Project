@@ -5,7 +5,9 @@ export interface EventFilter{
   price?: number;
   location?: string;
   showFull?: boolean;
-  page: number;
+  page?: number;
+  latitude?: number;
+  longitude?: number;
   createdByMe? : boolean;
   userId? : string;
   categoryIds? : string[];

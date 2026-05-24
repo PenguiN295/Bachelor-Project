@@ -1,49 +1,54 @@
 import { useSearchParams } from 'react-router-dom';
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { type EventFilter } from '../Interfaces/EventFilter';
 import url from '../../config';
 import { useDebounce } from './useDebounce';
 import type Event from '../Interfaces/Event';
 import { useAuth } from "../context/AuthContext";
 
-const defaultFilters: EventFilter = {
-    page: 1,
+const defaultFilters: Partial<EventFilter> = {
     search: '',
     showFull: false,
     price: 0,
     location: ''
 };
 
-export const useEvents = (userId?: string, createdByMe?: boolean, communityId?: string, isMember?: boolean) => {
+export const useEvents = (userId?: string, createdByMe?: boolean, communityId?: string, isMember?: boolean, latitude?: number, longitude?: number) => {
     const { token, logout } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
 
-    const filters: EventFilter = {
-        page: Number(searchParams.get('page')) || defaultFilters.page,
+    const filters: Partial<EventFilter> = {
         search: searchParams.get('search') || '',
         showFull: searchParams.get('showFull') === 'true',
         price: Number(searchParams.get('price')) || 0,
         location: searchParams.get('location') || '',
         categoryIds: searchParams.getAll('categoryIds'),
         startDate: searchParams.get('startDate') || '',
+        latitude: latitude,
+        longitude: longitude
     };
     const debouncedSearch = useDebounce(filters.search, 500);
     const debouncedLocation = useDebounce(filters.location, 500);
 
-    const { data: events = [], isLoading } = useQuery({
+    const { 
+        data, 
+        isLoading, 
+        fetchNextPage, 
+        hasNextPage, 
+        isFetchingNextPage 
+    } = useInfiniteQuery({
         queryKey: ["events", { ...filters, search: debouncedSearch, location: debouncedLocation, userId, createdByMe, communityId, isMember }],
-        queryFn: async (): Promise<Event[]> => {
-            const params = new URLSearchParams(searchParams.toString());1
+        queryFn: async ({ pageParam = 1 }): Promise<Event[]> => {
+            const params = new URLSearchParams(searchParams.toString());
+            params.set('page', String(pageParam));
             if (userId) params.set('userId', userId);
             if (createdByMe) params.set('createdByMe', String(createdByMe));
-            if (communityId)
-                { 
-                    params.set('communityId', communityId);
-                    if(isMember)
-                        params.set('seePrivate', 'true');
-
-            }else
-            {
+            if (latitude) params.set('latitude', String(latitude));
+            if (longitude) params.set('longitude', String(longitude));
+            if (communityId) { 
+                params.set('communityId', communityId);
+                if(isMember) params.set('seePrivate', 'true');
+            } else {
                 params.set('seePrivate', 'false');
             }
 
@@ -55,11 +60,17 @@ export const useEvents = (userId?: string, createdByMe?: boolean, communityId?: 
                 if (response.status === 401) { logout(); throw new Error("Unauthorized"); }
                 throw new Error("Fetch failed");
             }
-            const data = await response.json();
-            return data
+            return await response.json();
+        },
+        initialPageParam: 1,
+        getNextPageParam: (lastPage, allPages) => {
+            return lastPage.length === 50 ? allPages.length + 1 : undefined;
         },
         enabled: !!token,
     });
+
+    const events = data?.pages.flat() || [];
+
     const updateUrl = (newParams: Partial<EventFilter>) => {
         const params = new URLSearchParams(searchParams);
         
@@ -73,7 +84,6 @@ export const useEvents = (userId?: string, createdByMe?: boolean, communityId?: 
                 }
             }
         });
-        if (!newParams.hasOwnProperty('page')) params.set('page', '1');
         
         setSearchParams(params, { replace: true });
     };
@@ -90,5 +100,15 @@ export const useEvents = (userId?: string, createdByMe?: boolean, communityId?: 
 
     const handleFilterClear = () => setSearchParams({});
 
-    return { events, loading: isLoading, filters, handleFilterChange, handleFilterClear, handleCategoryChange };
+    return { 
+        events, 
+        loading: isLoading, 
+        filters, 
+        handleFilterChange, 
+        handleFilterClear, 
+        handleCategoryChange,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage
+    };
 };

@@ -9,16 +9,19 @@ const RegisterPage: React.FC = () => {
         const { name, value } = e.target;
         setCredentials(prev => ({ ...prev, [name]: value }));
     }
-    const handleSubmit = (e: React.FormEvent) =>
-    {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        
         if (credentials.password !== credentials.confirmPassword) {
             toast.error("Passwords do not match");
-        if(credentials.password.length < 6) {
-            toast.error("Password must be at least 6 characters long");
+            return;
         }
-        return;
-    }
+
+        if (credentials.password.length < 6) {
+            toast.error("Password must be at least 6 characters long");
+            return;
+        }
+
         register(credentials);
     }
         return(

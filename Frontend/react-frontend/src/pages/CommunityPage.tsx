@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useInView } from 'react-intersection-observer';
 import { useCommunity } from '../hooks/useCommunity';
 import { useEvents } from '../hooks/useEvents';
 import LoadingState from '../components/LoadingState';
@@ -13,7 +14,21 @@ const CommunityPage: React.FC = () => {
     const navigate = useNavigate();
     const { community, loading, join, leave, isJoining, isLeaving } = useCommunity(slug || '');
     
-    const { events: communityEvents, loading: eventsLoading } = useEvents(undefined, undefined, community?.id, community?.isJoined);
+    const { 
+        events: communityEvents, 
+        loading: eventsLoading,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage
+    } = useEvents(undefined, undefined, community?.id, community?.isJoined);
+
+    const { ref, inView } = useInView();
+
+    useEffect(() => {
+        if (inView && hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+        }
+    }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     if (loading) return <div className="container mt-5"><LoadingState /></div>;
     if (!community) return (
@@ -110,7 +125,16 @@ const CommunityPage: React.FC = () => {
                                         {eventsLoading ? (
                                             <LoadingState />
                                         ) : communityEvents.length > 0 ? (
-                                            <EventCardList events={communityEvents} />
+                                            <>
+                                                <EventCardList events={communityEvents} />
+                                                <div ref={ref} className="py-4 text-center">
+                                                    {isFetchingNextPage && (
+                                                        <div className="spinner-border text-primary" role="status">
+                                                            <span className="visually-hidden">Loading more...</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </>
                                         ) : (
                                             <div className="bg-light rounded p-4 text-center">
                                                 <i className="bi bi-calendar-x d-block mb-2 fs-3 text-muted"></i>

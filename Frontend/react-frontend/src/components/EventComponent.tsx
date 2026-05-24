@@ -30,6 +30,23 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable, isPast, onSave
     };
 
     const handleSave = () => {
+        if (!tempEvent.title.trim()) {
+            toast.error("Title is required");
+            return;
+        }
+        if (new Date(tempEvent.endAt) <= new Date(tempEvent.startAt)) {
+            toast.error("End date must be after start date");
+            return;
+        }
+        if (tempEvent.maxAttendees < 1) {
+            toast.error("Max attendees must be at least 1");
+            return;
+        }
+        if (tempEvent.price < 0) {
+            toast.error("Price cannot be negative");
+            return;
+        }
+
         onSave?.(tempEvent);
         setIsEditing(false);
     };

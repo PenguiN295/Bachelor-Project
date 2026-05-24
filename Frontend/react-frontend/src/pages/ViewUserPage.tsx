@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { useInView } from "react-intersection-observer";
 import EventCardList from "../components/EventCardList";
 import LoadingState from "../components/LoadingState";
 import { useEvents } from "../hooks/useEvents";
@@ -8,8 +9,22 @@ import noPhoto from "../assets/nophoto.svg";
 
 const ViewUserPage: React.FC = () => {
     const { userId } = useParams<{ userId: string }>();
-    const { events, loading: eventsLoading } = useEvents(userId);
+    const { 
+        events, 
+        loading: eventsLoading,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage
+    } = useEvents(userId);
     const { data: user, isLoading: userLoading } = useUser(userId?? '');
+
+    const { ref, inView } = useInView();
+
+    useEffect(() => {
+        if (inView && hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+        }
+    }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     if (userLoading) return <div className="container mt-5"><LoadingState /></div>;
 
@@ -42,7 +57,16 @@ const ViewUserPage: React.FC = () => {
                 {eventsLoading ? (
                     <LoadingState />
                 ) : events.length > 0 ? (
-                    <EventCardList events={events} />
+                    <>
+                        <EventCardList events={events} />
+                        <div ref={ref} className="py-4 text-center">
+                            {isFetchingNextPage && (
+                                <div className="spinner-border text-primary" role="status">
+                                    <span className="visually-hidden">Loading more...</span>
+                                </div>
+                            )}
+                        </div>
+                    </>
                 ) : (
                     <div className="bg-white p-5 rounded shadow-sm text-center">
                         <i className="bi bi-calendar-x display-1 text-muted mb-3 d-block"></i>
@@ -54,5 +78,6 @@ const ViewUserPage: React.FC = () => {
         </div>
     );
 }
+
 
 export default ViewUserPage;

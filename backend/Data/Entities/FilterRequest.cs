@@ -12,6 +12,8 @@ public class FilterRequest
     public bool SeePrivate { get; set; } = false;
     public bool CreatedByMe { get; set; } = false;
     public bool IsPast { get; set; } = false;
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
     public Guid? UserId { get; set; }
     public Guid? CommunityId { get; set; }
     public List<Guid> CategoryIds { get; set; } = new List<Guid>();

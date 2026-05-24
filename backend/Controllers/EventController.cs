@@ -146,14 +146,6 @@ public class EventController : ControllerBase
         {
             query = query.Where(e => e.EndAt < DateTimeOffset.UtcNow);
         }
-        else if (filter.StartDate == default)
-        {
-             // If not asking for past events and no specific start date, default to showing future events
-             // Unless searching for something specific that might include past? 
-             // Actually, usually users want future events unless specified.
-             // But let's keep it flexible. If IsPast is false, we might still want to see everything 
-             // if StartDate is default.
-        }
 
         if (filter.CreatedByMe == true)
         {
@@ -175,10 +167,25 @@ public class EventController : ControllerBase
             query = query.Where(e => e.Categories.Any(c => filter.CategoryIds.Contains(c.Id)));
         }
 
+        if (filter.Latitude.HasValue && filter.Longitude.HasValue)
+        {
+            var userLocation = new Point(filter.Longitude.Value, filter.Latitude.Value) { SRID = 4326 };
+            if (string.IsNullOrWhiteSpace(filter.Search))
+            {
+                query = query.Where(e => e.Location.Distance(userLocation) <= 0.1);
+            }
+            
+            query = query.OrderBy(e => e.Location.Distance(userLocation));
+        }
+        else
+        {
+            query = query.OrderByDescending(e => e.StartAt);
+        }
+
         int pageSize = 50;
         int skip = (filter.Page - 1) * pageSize;
 
-        var filteredResults = await query.OrderByDescending(e => e.StartAt)
+        var filteredResults = await query
             .Skip(skip)
             .Take(pageSize)
             .ProjectToType<EventResponse>()

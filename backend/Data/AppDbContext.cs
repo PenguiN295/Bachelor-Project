@@ -15,4 +15,12 @@ public class AppDbContext : DbContext
     public DbSet<Community> Communities { get; set; }
     public DbSet<CommunityMembership> Memberships { get; set; }
 
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        
+        modelBuilder.Entity<Event>()
+            .HasIndex(e => e.Location)
+            .HasMethod("gist");
+    }
 }

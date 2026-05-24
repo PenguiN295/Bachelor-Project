@@ -31,20 +31,23 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
                     </div>
                 )}
                 <div className="card-body">
-                    <h5 className="card-title">{event.title}</h5>
-                    <p className="card-text mb-1">
-                        <i className="bi bi-geo-alt me-1"></i>
+                    <div className="d-flex justify-content-between align-items-start mb-2">
+                        <h5 className="card-title mb-0 text-truncate">{event.title}</h5>
+                        <span className="badge bg-primary ms-2">
+                            {event.price === 0 ? "Free" : `$${event.price}`}
+                        </span>
+                    </div>
+                    <p className="card-text mb-1 small">
+                        <i className="bi bi-geo-alt me-1 text-primary"></i>
                         {event.city}, {event.county}
                     </p>
-                    <p className="card-text text-muted small">
-                        <i className="bi bi-calendar-event me-1"></i>
+                    <p className="card-text text-muted small mb-2">
+                        <i className="bi bi-calendar-event me-1 text-primary"></i>
                         {formatDate(event.startAt)}
-                        {event.startAt !== event.endAt && (
-                            <>
-                                {" — "}
-                                {formatDate(event.endAt)}
-                            </>
-                        )}
+                    </p>
+                    <p className="card-text text-muted small mb-0">
+                        <i className="bi bi-people me-1 text-primary"></i>
+                        {event.currentAttendees} / {event.maxAttendees}
                     </p>
                 </div>
             </div>

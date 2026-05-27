@@ -6,13 +6,6 @@ import { useDebounce } from './useDebounce';
 import type Event from '../Interfaces/Event';
 import { useAuth } from "../context/AuthContext";
 
-const defaultFilters: Partial<EventFilter> = {
-    search: '',
-    showFull: false,
-    price: 0,
-    location: ''
-};
-
 export const useEvents = (userId?: string, createdByMe?: boolean, communityId?: string, isMember?: boolean, latitude?: number, longitude?: number) => {
     const { token, logout } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();

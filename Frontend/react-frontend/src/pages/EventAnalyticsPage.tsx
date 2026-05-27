@@ -33,7 +33,6 @@ const EventAnalyticsPage: React.FC = () => {
             <h2 className="mb-4">Event Analytics: <span className="text-muted">{slug?.split('-').slice(0, -1).join(' ')}</span></h2>
 
             <div className="row g-4">
-                {/* Summary Cards */}
                 <div className="col-md-3">
                     <div className="card h-100 shadow-sm border-0 text-center p-3">
                         <div className="text-muted small mb-1">Total Subscribers</div>
@@ -59,7 +58,6 @@ const EventAnalyticsPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Charts */}
                 <div className="col-lg-8">
                     <div className="card shadow-sm border-0 p-4">
                         <h5 className="card-title mb-4">Capacity Utilization</h5>
@@ -75,7 +73,7 @@ const EventAnalyticsPage: React.FC = () => {
                                         paddingAngle={5}
                                         dataKey="value"
                                     >
-                                        {pieData.map((entry, index) => (
+                                        {pieData.map((_, index) => (
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>

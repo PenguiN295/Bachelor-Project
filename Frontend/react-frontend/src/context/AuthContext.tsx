@@ -9,6 +9,7 @@ interface AuthContextType {
     userId: string | null;
     username: string | null;
     photo: string | null;
+    role: string | null;
     token: string | null;
     login: (token: string) => void;
     logout: () => void;
@@ -24,7 +25,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const { data: userInfo, isLoading } = useQuery({
         queryKey: ["userInfo", token],
-        queryFn: async (): Promise<{ username: string, id: string, photo: string | null }> => {
+        queryFn: async (): Promise<{ username: string, id: string, photo: string | null, role: string }> => {
             const response = await fetch(`${url}/user-info`, {
                 method: 'GET',
                 headers: {
@@ -64,6 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             userId: userInfo?.id || null,
             username: userInfo?.username || null, 
             photo: userInfo?.photo || null,
+            role: userInfo?.role || null,
             token, 
             login, 
             logout, 

@@ -3,6 +3,9 @@ import { useCommunities } from '../hooks/useCommunities';
 import CommunityCardList from '../components/CommunityCardList';
 import LoadingState from '../components/LoadingState';
 import { useNavigate } from 'react-router-dom';
+import { Search, Plus, UsersRound } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 const CommunitiesPage: React.FC = () => {
     const { communities, loading, error } = useCommunities();
@@ -15,34 +18,38 @@ const CommunitiesPage: React.FC = () => {
     );
 
     if (error) return (
-        <div className="container mt-5 text-center">
-            <div className="alert alert-danger">Error loading communities. Please try again later.</div>
+        <div className="container mx-auto px-4 py-8 max-w-5xl mt-5 text-center">
+            <div className="bg-red-50 text-red-600 p-4 rounded-lg border border-red-200">
+                Error loading communities. Please try again later.
+            </div>
         </div>
     );
 
     return (
-        <div className="container mt-5">
-            <div className="d-flex justify-content-between align-items-center mb-4">
+        <div className="container mx-auto px-4 py-8 max-w-5xl">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
-                    <h2 className="mb-1">Explore Communities</h2>
-                    <p className="text-muted">Find and join groups of like-minded people.</p>
+                    <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
+                        Explore Communities
+                    </h1>
+                    <p className="text-slate-500 mt-1">Find and join groups of like-minded people.</p>
                 </div>
-                <button 
-                    className="btn btn-primary"
+                <Button 
                     onClick={() => navigate('/communities/create')}
+                    size="lg"
+                    className="w-full md:w-auto shrink-0"
                 >
-                    <i className="bi bi-plus-lg me-2"></i>Create Community
-                </button>
+                    <Plus className="mr-2 h-5 w-5" />
+                    Create Community
+                </Button>
             </div>
 
-            <div className="card shadow-sm mb-4 border-0 bg-light p-3">
-                <div className="input-group">
-                    <span className="input-group-text bg-white border-end-0">
-                        <i className="bi bi-search text-muted"></i>
-                    </span>
-                    <input
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-8">
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                    <Input
                         type="text"
-                        className="form-control border-start-0 ps-1"
+                        className="pl-10 py-6 text-base bg-slate-50 border-slate-200 focus-visible:ring-primary/20"
                         placeholder="Search communities by name or description..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -53,14 +60,18 @@ const CommunitiesPage: React.FC = () => {
             {loading ? (
                 <LoadingState />
             ) : filteredCommunities.length > 0 ? (
-                <CommunityCardList communities={filteredCommunities} />
+                <div className="max-w-4xl mx-auto">
+                    <CommunityCardList communities={filteredCommunities} />
+                </div>
             ) : (
-                <div className="text-center py-5">
-                    <div className="mb-3">
-                        <i className="bi bi-search" style={{ fontSize: '3rem', color: '#dee2e6' }}></i>
+                <div className="bg-white rounded-xl border border-slate-200 p-16 text-center shadow-sm max-w-3xl mx-auto mt-8">
+                    <div className="mx-auto w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                        <UsersRound className="w-10 h-10 text-slate-300" />
                     </div>
-                    <h4>No communities found</h4>
-                    <p className="text-muted">Try a different search term or be the first to create one!</p>
+                    <h3 className="text-xl font-semibold text-slate-900 mb-2">No communities found</h3>
+                    <p className="text-slate-500 max-w-md mx-auto">
+                        We couldn't find any communities matching "{searchTerm}". Try a different search term or be the first to create one!
+                    </p>
                 </div>
             )}
         </div>

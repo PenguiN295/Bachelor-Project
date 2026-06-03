@@ -3,4 +3,5 @@ export default interface UserResponse {
     username: string;
     photo?: string;
     role?: string;
+    isBanned?: boolean;
 }

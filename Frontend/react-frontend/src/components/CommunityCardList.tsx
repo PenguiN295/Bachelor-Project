@@ -8,7 +8,7 @@ interface CommunityListProps {
 
 const CommunityCardList: React.FC<CommunityListProps> = ({ communities }) => {
     return (
-        <div className="community-list mt-3">
+        <div className="flex flex-col gap-4 mt-6">
             {communities.map(community => (
                 <CommunityListItem key={community.id} community={community} />
             ))}

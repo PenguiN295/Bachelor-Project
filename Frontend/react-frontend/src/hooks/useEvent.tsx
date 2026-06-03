@@ -28,7 +28,7 @@ export const useEvent = (slug: string) => {
 
   const ownershipQuery = useQuery({
     queryKey: ["ownership", slug],
-    queryFn: async (): Promise<boolean> => {
+    queryFn: async () => {
       const response = await fetch(`${url}/ownership-status/${slug}`, {
         method: "GET",
         headers: {
@@ -37,14 +37,11 @@ export const useEvent = (slug: string) => {
         },
       });
       if (!response.ok) throw new Error("Failed to verify ownership");
-      const data = await response.json();
-      return data.status === "Owner";
+      return await response.json();
     },
     enabled: !!slug && !!token && !!eventQuery.data,
     staleTime: 5 * 60 * 1000,
   });
-
-
 
   const subscriptionQuery = useQuery({
     queryKey: ["subscription", slug],
@@ -130,7 +127,8 @@ export const useEvent = (slug: string) => {
 
   return {
     event: eventQuery.data ?? null,
-    isOwner: !!ownershipQuery.data,
+    isOwner: ownershipQuery.data?.isCreator ?? false,
+    canDelete: ownershipQuery.data?.canDelete ?? false,
     isSubscribed: !!subscriptionQuery.data,
     loading: eventQuery.isLoading || ownershipQuery.isLoading || subscriptionQuery.isLoading,
     error: eventQuery.error || ownershipQuery.error || subscriptionQuery.error,

@@ -5,52 +5,52 @@ import EventComponent from "../components/EventComponent";
 import SubscribeComponent from "../components/SubscribeComponent";
 import MapComponent from "../components/MapComponent";
 
-
 const EventPage: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
-    const { event, loading, isOwner, isSubscribed, updateEvent, deleteEvent, creator } = useEvent(slug!);
+    const { event, loading, isOwner, canDelete, isSubscribed, updateEvent, deleteEvent, creator } = useEvent(slug!);
     const isPast = event ? new Date(event.endAt) < new Date() : false;
 
-    return <>
-        <div className=" bg-light min-vh-100">
-            {loading ? (
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
                 <LoadingState />
-            ) : event ? (
-                isOwner ? (
-                    <div>
-                        <EventComponent 
-                            event={event} 
-                            isEditable={true} 
-                            isPast={isPast}
-                            onSave={updateEvent} 
-                            onDelete={deleteEvent} 
-                            creator={creator?.name} 
-                            creatorId={creator?.id} 
-                            creatorPhoto={creator?.photo} 
-                        />
-                        <div className="container py-5">
-                            <MapComponent position={{ lat: event.latitude, lng: event.longitude }} />
-                            
-                        </div>
-                    </div>
+            </div>
+        );
+    }
 
-                ) : (
-                    <div>
-                        <EventComponent event={event} creator={creator?.name} creatorId={creator?.id} creatorPhoto={creator?.photo} />
+    if (!event) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+                <div className="text-center text-slate-500">Event not found or something went wrong.</div>
+            </div>
+        );
+    }
 
-                        <div className="container py-5">
-                            <SubscribeComponent event={event} isSubscribed={isSubscribed} />
-                            <MapComponent position={{ lat: event.latitude, lng: event.longitude }} />
-                        </div>
-                    </div>
-
-
-        )
-        ) :
-        <div className="vh-100 d-flex justify-content-center align-items-center">Something went wrong</div>}
-    </div >
-
-
-    </>
+    return (
+        <div className="min-h-screen bg-slate-50 pb-12">
+            <EventComponent 
+                event={event} 
+                isEditable={isOwner}
+                canDelete={canDelete}
+                isPast={isPast}
+                onSave={updateEvent} 
+                onDelete={deleteEvent} 
+                creator={creator?.name} 
+                creatorId={creator?.id} 
+                creatorPhoto={creator?.photo} 
+            />
+            
+            <div className="container mx-auto px-4 max-w-5xl mt-8 space-y-8">
+                {(!isOwner && !isPast) && (
+                    <SubscribeComponent event={event} isSubscribed={isSubscribed} />
+                )}
+                
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-[400px]">
+                    <MapComponent position={{ lat: event.latitude, lng: event.longitude }} />
+                </div>
+            </div>
+        </div>
+    );
 }
+
 export default EventPage;

@@ -58,6 +58,10 @@ public class AuthController : ControllerBase
         {
             return Unauthorized("Invalid password");
         }
+        if (user.IsBanned)
+        {
+            return Unauthorized("Your account has been banned.");
+        }
         var token = _tokenService.GenerateToken(user);
         return Ok(new { token });
     }

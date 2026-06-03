@@ -238,4 +238,41 @@ public class CommunityController : ControllerBase
 
         return Ok(members);
     }
+
+    [HttpDelete("{slug}/members/{userId}")]
+    [Authorize(Roles = "User,Admin")]
+    public async Task<IActionResult> RemoveMember(string slug, Guid userId)
+    {
+        var currentUserIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(currentUserIdClaim, out var currentUserGuid))
+        {
+            return Unauthorized();
+        }
+
+        var community = await _dbContext.Communities
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Slug == slug);
+
+        if (community == null) return NotFound("Community not found");
+
+        var currentMembership = await _dbContext.Memberships
+            .AsNoTracking()
+            .FirstOrDefaultAsync(m => m.CommunityId == community.Id && m.UserId == currentUserGuid);
+
+        if (currentMembership == null || (currentMembership.Role != "Owner" && !User.IsInRole("Admin")))
+        {
+            return Forbid();
+        }
+
+        var targetMembership = await _dbContext.Memberships
+            .FirstOrDefaultAsync(m => m.CommunityId == community.Id && m.UserId == userId);
+
+        if (targetMembership == null) return NotFound("Member not found in this community");
+        if (targetMembership.Role == "Owner") return BadRequest("Cannot remove the community owner");
+
+        _dbContext.Memberships.Remove(targetMembership);
+        await _dbContext.SaveChangesAsync();
+
+        return Ok("Member removed successfully");
+    }
 }

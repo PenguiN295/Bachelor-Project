@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { useCreateCommunity } from '../hooks/useCreateCommunity';
 import { useNavigate } from 'react-router-dom';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Loader2, ArrowLeft, ImagePlus } from 'lucide-react';
 
 const CreateCommunityPage: React.FC = () => {
     const { createCommunity, isPending } = useCreateCommunity();
@@ -30,91 +35,101 @@ const CreateCommunityPage: React.FC = () => {
     };
 
     return (
-        <div className="container mt-5">
-            <div className="row justify-content-center">
-                <div className="col-md-8 col-lg-6">
-                    <div className="card shadow-sm p-4">
-                        <div className="d-flex align-items-center mb-4">
-                            <button 
-                                className="btn btn-link text-decoration-none p-0 me-3" 
-                                onClick={() => navigate('/communities')}
-                            >
-                                <i className="bi bi-arrow-left fs-4"></i>
-                            </button>
-                            <h2 className="mb-0">Create a Community</h2>
-                        </div>
+        <div className="min-h-screen bg-slate-50 py-12 px-4">
+            <div className="max-w-3xl mx-auto">
+                
+                <Button 
+                    variant="ghost" 
+                    className="mb-6 -ml-4 text-slate-500 hover:text-slate-900"
+                    onClick={() => navigate('/communities')}
+                >
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Communities
+                </Button>
 
-                        <form onSubmit={handleSubmit}>
-                            <div className="mb-3 text-center">
-                                <label className="form-label d-block text-start fw-bold">Community Image</label>
-                                <div 
-                                    className="community-photo-upload mx-auto border rounded d-flex align-items-center justify-content-center overflow-hidden position-relative"
-                                    style={{ width: '200px', height: '200px', backgroundColor: '#f8f9fa' }}
-                                >
+                <div className="mb-8">
+                    <h1 className="text-3xl font-bold text-slate-900 mb-2">Create a Community</h1>
+                    <p className="text-slate-500">Build a space for people with shared interests.</p>
+                </div>
+
+                <Card className="border-0 shadow-md">
+                    <CardContent className="p-6 md:p-8">
+                        <form onSubmit={handleSubmit} className="space-y-8">
+                            
+                            <div className="flex flex-col items-center space-y-4">
+                                <Label className="text-slate-700 font-semibold w-full text-left">Community Image</Label>
+                                <div className="relative group w-48 h-48 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 overflow-hidden hover:border-primary/50 transition-colors flex items-center justify-center">
                                     {preview ? (
-                                        <img src={preview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        <img src={preview} alt="Preview" className="w-full h-full object-cover" />
                                     ) : (
-                                        <div className="text-center text-muted">
-                                            <i className="bi bi-image fs-1 d-block"></i>
-                                            <span>Click to upload</span>
+                                        <div className="flex flex-col items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
+                                            <ImagePlus className="w-8 h-8 mb-2" />
+                                            <span className="text-sm font-medium">Upload Image</span>
                                         </div>
                                     )}
                                     <input 
                                         type="file" 
-                                        className="position-absolute opacity-0 w-100 h-100 cursor-pointer"
-                                        style={{ top: 0, left: 0, cursor: 'pointer' }}
+                                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
                                         onChange={handleImageChange}
                                         accept="image/*"
                                     />
                                 </div>
+                                <p className="text-xs text-slate-500 w-full text-center">Square images (1:1 ratio) work best.</p>
                             </div>
 
-                            <div className="mb-3">
-                                <label className="form-label fw-bold">Community Name</label>
-                                <input
+                            <div className="space-y-2">
+                                <Label htmlFor="name">Community Name <span className="text-destructive">*</span></Label>
+                                <Input
+                                    id="name"
                                     type="text"
-                                    className="form-control"
                                     placeholder="What's your community called?"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     required
+                                    className="bg-slate-50 text-base py-6"
+                                    disabled={isPending}
                                 />
                             </div>
 
-                            <div className="mb-4">
-                                <label className="form-label fw-bold">Description</label>
+                            <div className="space-y-2">
+                                <Label htmlFor="description">Description <span className="text-destructive">*</span></Label>
                                 <textarea
-                                    className="form-control"
-                                    rows={4}
+                                    id="description"
+                                    className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 min-h-[120px]"
                                     placeholder="Tell people what your community is about..."
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
                                     required
+                                    disabled={isPending}
                                 ></textarea>
                             </div>
 
-                            <div className="d-grid gap-2">
-                                <button 
-                                    type="submit" 
-                                    className="btn btn-primary py-2" 
-                                    disabled={isPending}
-                                >
-                                    {isPending ? (
-                                        <><span className="spinner-border spinner-border-sm me-2"></span>Creating...</>
-                                    ) : 'Create Community'}
-                                </button>
-                                <button 
+                            <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row justify-end gap-3">
+                                <Button 
                                     type="button" 
-                                    className="btn btn-outline-secondary py-2"
+                                    variant="outline" 
                                     onClick={() => navigate('/communities')}
                                     disabled={isPending}
+                                    className="w-full sm:w-auto"
                                 >
                                     Cancel
-                                </button>
+                                </Button>
+                                <Button 
+                                    type="submit" 
+                                    disabled={isPending}
+                                    className="w-full sm:w-auto"
+                                >
+                                    {isPending ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                            Creating...
+                                        </>
+                                    ) : 'Create Community'}
+                                </Button>
                             </div>
                         </form>
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

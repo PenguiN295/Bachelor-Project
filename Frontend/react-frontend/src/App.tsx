@@ -5,8 +5,6 @@ import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import RegisterPage from './pages/RegisterPage';
 import { AuthProvider } from './context/AuthContext';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import 'bootstrap-icons/font/bootstrap-icons.css';
 import UserPage from './pages/UserPage';
 import ChangePage from './pages/ChangePage';
 import CreateEventPage from './pages/CreateEventPage';
@@ -22,6 +20,7 @@ import CommunityPage from './pages/CommunityPage';
 import CreateCommunityPage from './pages/CreateCommunityPage';
 import PastEventsPage from './pages/PastEventsPage';
 import EventAnalyticsPage from './pages/EventAnalyticsPage';
+import UsersPage from './pages/UsersPage';
 
 const queryClient = new QueryClient();
 
@@ -50,6 +49,7 @@ const App: React.FC = () => {
               <Route path="/CreateEvent/:communityId" element={<CreateEventPage />} />
               <Route path="/past-events" element={<PastEventsPage />} />
               <Route path="/event-analytics/:slug" element={<EventAnalyticsPage />} />
+              <Route path="/admin/users" element={<UsersPage />} />
             </Route>
           </Route>
 

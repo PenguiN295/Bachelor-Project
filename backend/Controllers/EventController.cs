@@ -255,7 +255,7 @@ public class EventController : ControllerBase
     }
 
     [HttpDelete("delete-event/{slug}")]
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = "User,Admin")]
     public async Task<IActionResult> DeleteEvent(string slug)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -267,7 +267,26 @@ public class EventController : ControllerBase
         var existingEvent = await _dbContext.Events.FirstOrDefaultAsync(e => e.Slug == slug);
         if (existingEvent == null) return NotFound();
 
-        if (existingEvent.CreatorId != userGuid) return Forbid();
+        bool canDelete = false;
+
+        if (User.IsInRole("Admin"))
+        {
+            canDelete = true;
+        }
+        else if (existingEvent.CreatorId == userGuid)
+        {
+            canDelete = true;
+        }
+        else if (existingEvent.CommunityId.HasValue)
+        {
+            var isOwner = await _dbContext.Memberships.AnyAsync(m => m.CommunityId == existingEvent.CommunityId.Value && m.UserId == userGuid && m.Role == "Owner");
+            if (isOwner)
+            {
+                canDelete = true;
+            }
+        }
+
+        if (!canDelete) return Forbid();
 
         if (existingEvent.ImageUrl != null)
         {
@@ -350,16 +369,26 @@ public class EventController : ControllerBase
     }
 
     [HttpGet("ownership-status/{slug}")]
-    [Authorize(Roles = "User")]
-    public async Task<IActionResult> IsOwner(string slug)
+    [Authorize(Roles = "User,Admin")]
+    public async Task<IActionResult> OwnershipStatus(string slug)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(userIdClaim, out var userGuid)) return Unauthorized();
 
-        var ev = await _dbContext.Events.AsNoTracking()
-            .FirstOrDefaultAsync(e => e.CreatorId == userGuid && e.Slug == slug);
+        var ev = await _dbContext.Events.AsNoTracking().FirstOrDefaultAsync(e => e.Slug == slug);
+        if (ev == null) return NotFound();
 
-        return Ok(new { status = ev != null ? "Owner" : "Not Owner" });
+        bool isCreator = ev.CreatorId == userGuid;
+        bool canDelete = isCreator || User.IsInRole("Admin");
+
+        if (!canDelete && ev.CommunityId.HasValue)
+        {
+            var isCommunityOwner = await _dbContext.Memberships
+                .AnyAsync(m => m.CommunityId == ev.CommunityId.Value && m.UserId == userGuid && m.Role == "Owner");
+            if (isCommunityOwner) canDelete = true;
+        }
+
+        return Ok(new { isCreator, canDelete, status = isCreator ? "Owner" : "Not Owner" });
     }
 
     [HttpGet("creator-name/{slug}")]

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { X, ChevronDown } from "lucide-react";
 
 interface Category {
   id: string;
@@ -35,62 +36,74 @@ function CategoryMultiSelect({ categories, value, onChange }: CategoryMultiSelec
 
   const removeCategory = (id: string) => {
     onChange(value.filter((v) => v !== id));
-
   };
 
   const selectedCategories = categories?.filter((c) => value?.includes(c.id)) ?? [];
   const unselectedCategories = categories?.filter((c) => !value?.includes(c.id)) ?? [];
 
   return (
-    <div>
-      <label>Categories</label>
-
+    <div className="w-full relative" ref={dropdownRef}>
       {selectedCategories.length > 0 && (
-        <div className="d-flex flex-wrap gap-1 mb-2">
+        <div className="flex flex-wrap gap-2 mb-3">
           {selectedCategories.map((category) => (
-            <span key={category.id} className="badge bg-primary d-flex align-items-center gap-1" style={{ fontSize: "0.85rem" }}>
+            <span 
+                key={category.id} 
+                className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary border border-primary/20"
+            >
               {category.name}
               <button
                 type="button"
-                className="btn-close btn-close-white"
-                style={{ fontSize: "0.6rem" }}
+                className="ml-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-primary/20 hover:text-primary transition-colors focus:outline-none"
                 aria-label={`Remove ${category.name}`}
-                onClick={() => removeCategory(category.id)}
-              />
+                onClick={(e) => {
+                    e.stopPropagation();
+                    removeCategory(category.id);
+                }}
+              >
+                <X className="h-3 w-3" />
+              </button>
             </span>
           ))}
         </div>
       )}
 
-      <div className="dropdown" ref={dropdownRef}>
+      <div>
         <button
           type="button"
-          className="btn btn-outline-secondary dropdown-toggle w-100 text-start"
+          className="flex h-10 w-full items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           onClick={() => setIsOpen((prev) => !prev)}
           aria-expanded={isOpen}
         >
-          {selectedCategories.length === 0
-            ? "Select categories..."
-            : `${selectedCategories.length} selected`}
+          <span className="truncate text-slate-500">
+            {selectedCategories.length === 0 ? "Select categories..." : "Add more..."}
+          </span>
+          <ChevronDown className="h-4 w-4 opacity-50" />
         </button>
 
         {isOpen && (
-          <ul className="dropdown-menu show w-100" style={{ maxHeight: "220px", overflowY: "auto" }}>
-            {unselectedCategories.length === 0 && (
-              <li><span className=" text-muted">All categories selected</span></li>
-            )}
-            {unselectedCategories.map((category) => (
-              <li key={category.id}>
-                <button
-                  type="button"
-                  className="dropdown-item"
-                  onClick={() => toggleCategory(category.id)}
-                >
-                  {category.name}
-                </button>
-              </li>
-            ))}
-          </ul>
+          <div className="absolute top-full z-50 mt-1 w-full rounded-md border bg-white shadow-md outline-none animate-in fade-in-0 zoom-in-95">
+             <ul className="max-h-60 overflow-auto p-1 text-sm text-slate-700">
+                {unselectedCategories.length === 0 && (
+                <li className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none text-slate-500 italic">
+                    All categories selected
+                </li>
+                )}
+                {unselectedCategories.map((category) => (
+                <li key={category.id}>
+                    <button
+                    type="button"
+                    className="relative flex w-full cursor-pointer select-none items-center rounded-sm py-2 px-3 text-sm outline-none hover:bg-slate-100 focus:bg-slate-100 text-left transition-colors"
+                    onClick={() => {
+                        toggleCategory(category.id);
+                        setIsOpen(false);
+                    }}
+                    >
+                    {category.name}
+                    </button>
+                </li>
+                ))}
+            </ul>
+          </div>
         )}
       </div>
     </div>

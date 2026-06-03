@@ -70,7 +70,7 @@ public class ProfileController : ControllerBase
         {
             return NotFound("User not found");
         }
-        return Ok(new { user.Username, user.Id, Photo = user.Photo != null ? _photoService.BuildUrl(user.Photo) : null });
+        return Ok(new { user.Username, user.Id, Photo = user.Photo != null ? _photoService.BuildUrl(user.Photo) : null, Role = user.Role });
     }
 
     [HttpGet("user/{userId}")]
@@ -88,9 +88,62 @@ public class ProfileController : ControllerBase
             Id = user.Id,
             Username = user.Username,
             Photo = user.Photo != null ? _photoService.BuildUrl(user.Photo) : null,
-            Role = user.Role
+            Role = user.Role,
+            IsBanned = user.IsBanned
         };
         
         return Ok(response);
+    }
+
+    [HttpGet("users")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetAllUsers()
+    {
+        var users = await _dbContext.Users
+            .AsNoTracking()
+            .Select(u => new UserResponse
+            {
+                Id = u.Id,
+                Username = u.Username,
+                Photo = u.Photo,
+                Role = u.Role,
+                IsBanned = u.IsBanned
+            })
+            .ToListAsync();
+
+        foreach (var u in users)
+        {
+            if (u.Photo != null)
+            {
+                u.Photo = _photoService.BuildUrl(u.Photo);
+            }
+        }
+
+        return Ok(users);
+    }
+
+    [HttpPost("user/{userId}/ban")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> BanUser(Guid userId)
+    {
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null) return NotFound("User not found");
+        if (user.Role == "Admin") return BadRequest("Cannot ban an admin");
+
+        user.IsBanned = true;
+        await _dbContext.SaveChangesAsync();
+        return Ok("User banned successfully");
+    }
+
+    [HttpPost("user/{userId}/unban")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UnbanUser(Guid userId)
+    {
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null) return NotFound("User not found");
+
+        user.IsBanned = false;
+        await _dbContext.SaveChangesAsync();
+        return Ok("User unbanned successfully");
     }
 }

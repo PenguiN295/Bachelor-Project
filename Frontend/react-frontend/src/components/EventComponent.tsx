@@ -1,14 +1,19 @@
-
 import { useState } from "react";
-import type Event from "../Interfaces/Event"
+import type Event from "../Interfaces/Event";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import UserComponent from "./UserComponent";
 import { formatDateTime } from "../utils/dateUtils";
+import { Users, DollarSign, CalendarClock, ChartNoAxesCombined, Pencil, Trash2, X, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 
 export interface EventProp {
     event: Event;
     isEditable?: boolean;
+    canDelete?: boolean;
     isPast?: boolean;
     onSave?: (updatedEvent: Event) => void;
     onDelete?: () => void;
@@ -17,7 +22,7 @@ export interface EventProp {
     creatorPhoto?: string | null;
 }
 
-const EventComponent: React.FC<EventProp> = ({ event, isEditable, isPast, onSave, onDelete, creator, creatorId, creatorPhoto }) => {
+const EventComponent: React.FC<EventProp> = ({ event, isEditable, canDelete, isPast, onSave, onDelete, creator, creatorId, creatorPhoto }) => {
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const [tempEvent, setTempEvent] = useState<Event>(event);
@@ -25,7 +30,6 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable, isPast, onSave
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-
         setTempEvent(prev => ({ ...prev, [name]: name === 'price' || name === 'maxAttendees' ? Number(value) : value }));
     };
 
@@ -50,9 +54,6 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable, isPast, onSave
         onSave?.(tempEvent);
         setIsEditing(false);
     };
-    const handleDelete = () => {
-        setShowDeleteConfirm(true);
-    };
 
     const confirmDelete = () => {
         setShowDeleteConfirm(false);
@@ -62,157 +63,213 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable, isPast, onSave
         navigate("/dashboard");
     };
 
-    const cancelDelete = () => {
-        setShowDeleteConfirm(false);
-    };
-
     const handleCancel = () => {
         setTempEvent({ ...event });
         setIsEditing(false);
-
     };
 
     return (
-        <div className="container py-5">
-            <div className="d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
-                <div className="flex-grow-1 me-4">
-                    {isEditing ? (
-                        <input
-                            className="form-control form-control-lg fw-bold mb-2"
-                            name="title"
-                            value={tempEvent.title}
-                            onChange={handleInputChange}
-                        />
-                    ) : (
-                        <h1 className="display-5 fw-bold text-dark">{event.title}</h1>
-                    )}
-                    <div className="d-flex align-items-center text-muted">
-                        <i className="bi bi-people me-2"></i>
-                        {isEditing ? (
-                            <div className="d-flex align-items-center">
-                                <span>{event.currentAttendees} / </span>
-                                <input type="number" name="maxAttendees" className="form-control form-control-sm ms-2" style={{ width: '80px' }} value={tempEvent.maxAttendees} onChange={handleInputChange} />
-                            </div>
-                        ) : (
-                            <span className="lead">{event.currentAttendees} / {event.maxAttendees} Attendees Registered</span>
-                        )}
-                    </div>
+        <div className="bg-white border-b border-slate-200">
+            {event.imageUrl && (
+                <div className="w-full h-64 md:h-96 relative overflow-hidden bg-slate-900">
+                    <img 
+                        src={event.imageUrl} 
+                        alt={event.title} 
+                        className="w-full h-full object-cover opacity-80"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
                 </div>
-
-                <div className="text-end">
-                    {isEditing ? (
-                        <div className="input-group input-group-lg mb-3">
-                            <span className="input-group-text">$</span>
-                            <input type="number" name="price" className="form-control" value={tempEvent.price} onChange={handleInputChange} />
-                        </div>
-                    ) : (
-                        <div className="badge bg-primary p-3 fs-4 shadow-sm mb-3">
-                            {event.price === 0 ? "Free" : `$${event.price.toFixed(2)}`}
-                        </div>
-                    )}
-
-                    {isEditable && (
-                        <div className="d-flex gap-2 justify-content-end">
-                            {isEditing ? (
-                                <>
-                                    <button className="btn btn-outline-secondary" onClick={handleCancel}>Cancel</button>
-                                    <button className="btn btn-success" onClick={handleSave}>Save</button>
-                                    <button className="btn btn-danger" onClick={handleDelete}>Delete</button>
-                                </>
-                            ) : (
-                                <>
-                                    {isPast ? (
-                                        <button className="btn btn-primary" onClick={() => navigate(`/event-analytics/${event.slug}`)}>
-                                            <i className="bi bi-graph-up me-1"></i> Analytics
-                                        </button>
-                                    ) : (
-                                        <button className="btn btn-outline-primary" onClick={() => setIsEditing(true)}>
-                                            <i className="bi bi-pencil me-1"></i> Edit Event
-                                        </button>
-                                    )}
-                                </>
-                            )}
-                        </div>
-                    )}
-                    {showDeleteConfirm && (
-                        <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-                            <div className="modal-dialog modal-dialog-centered">
-                                <div className="modal-content">
-                                    <div className="modal-header">
-                                        <h5 className="modal-title">Confirm Delete</h5>
-                                    </div>
-                                    <div className="modal-body">
-                                        <p>Are you sure you want to delete this event?</p>
-                                    </div>
-                                    <div className="modal-footer">
-                                        <button type="button" className="btn btn-secondary" onClick={cancelDelete}>Cancel</button>
-                                        <button type="button" className="btn btn-danger" onClick={confirmDelete}>Delete</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-            <div className="row g-5">
-                <div className="col-lg-7">
-                    <section className="mb-5">
-                        <h3 className="h5 text-uppercase fw-bold text-primary border-start border-4 border-primary ps-3 mb-3">Description</h3>
+            )}
+            
+            <div className="container mx-auto px-4 max-w-5xl py-8">
+                <div className="flex flex-col md:flex-row justify-between items-start gap-6">
+                    <div className="flex-1 w-full">
                         {isEditing ? (
-                            <textarea
-                                className="form-control"
-                                name="description"
-                                rows={8}
-                                value={tempEvent.description}
+                            <Input
+                                className="text-2xl font-bold h-14 mb-4 bg-slate-50 border-slate-200"
+                                name="title"
+                                value={tempEvent.title}
                                 onChange={handleInputChange}
                             />
                         ) : (
-                            <p className="lead text-secondary lh-lg">{event.description}</p>
+                            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">{event.title}</h1>
                         )}
-                    </section>
-
-                    <div className="row g-3">
-                        <div className="col-md-6">
-                            <div className="p-3 bg-light rounded shadow-sm">
-                                <label className="d-block text-uppercase text-muted fw-bold small">Start Date</label>
+                        
+                        <div className="flex flex-wrap items-center gap-4 text-slate-600">
+                            <div className="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full text-sm font-medium">
+                                <Users className="w-4 h-4 text-primary" />
                                 {isEditing ? (
-                                    <input type="datetime-local" name="startAt" className="form-control mt-2" value={tempEvent.startAt} onChange={handleInputChange} />
-                                ) : (
-                                    <div className="fs-5 fw-medium">{formatDateTime(event.startAt)}</div>
-                                )}
-                            </div>
-                        </div>
-                        <div className="col-md-6">
-                            <div className="p-3 bg-light rounded shadow-sm">
-                                <label className="d-block text-uppercase text-muted fw-bold small">End Date</label>
-                                {isEditing ? (
-                                    <input type="datetime-local" name="endAt" className="form-control mt-2" value={tempEvent.endAt} onChange={handleInputChange} />
-                                ) : (
-                                    <div className="fs-5 fw-medium">{formatDateTime(event.endAt)}</div>
-                                )}
-                            </div>
-                        </div>
-                        <div>
-                            <div className="p-3 bg-light rounded shadow-sm mt-3">
-                                <label className="d-block text-uppercase text-muted fw-bold small mb-2">Organizer </label>
-                                {creatorId && creator ? (
-                                    <div style={{ maxWidth: '250px' }}>
-                                        <UserComponent
-                                            id={creatorId}
-                                            username={creator}
-                                            photo={creatorPhoto}
-                                            isMe={isEditable}
+                                    <div className="flex items-center gap-2">
+                                        <span>{event.currentAttendees} /</span>
+                                        <Input 
+                                            type="number" 
+                                            name="maxAttendees" 
+                                            className="w-20 h-7 text-sm py-0 px-2" 
+                                            value={tempEvent.maxAttendees} 
+                                            onChange={handleInputChange} 
                                         />
                                     </div>
                                 ) : (
-                                    <div className="text-muted">Unknown</div>
+                                    <span>{event.currentAttendees} / {event.maxAttendees} Attending</span>
                                 )}
                             </div>
                         </div>
                     </div>
+
+                    <div className="w-full md:w-auto flex flex-col items-stretch md:items-end gap-4 shrink-0">
+                        {isEditing ? (
+                            <div className="relative">
+                                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                <Input 
+                                    type="number" 
+                                    name="price" 
+                                    className="pl-10 text-lg h-12 w-full md:w-48 bg-slate-50 border-slate-200" 
+                                    value={tempEvent.price} 
+                                    onChange={handleInputChange} 
+                                />
+                            </div>
+                        ) : (
+                            <div className="bg-primary text-primary-foreground px-6 py-3 rounded-xl text-2xl font-bold shadow-sm inline-block text-center w-full md:w-auto">
+                                {event.price === 0 ? "Free" : `$${event.price.toFixed(2)}`}
+                            </div>
+                        )}
+
+                        {(isEditable || canDelete) && (
+                            <div className="flex flex-wrap gap-2 justify-end">
+                                {isEditing ? (
+                                    <>
+                                        <Button variant="outline" onClick={handleCancel}>
+                                            <X className="w-4 h-4 mr-2" /> Cancel
+                                        </Button>
+                                        <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={handleSave}>
+                                            <Check className="w-4 h-4 mr-2" /> Save
+                                        </Button>
+                                    </>
+                                ) : (
+                                    <>
+                                        {isEditable && (
+                                            isPast ? (
+                                                <Button onClick={() => navigate(`/event-analytics/${event.slug}`)}>
+                                                    <ChartNoAxesCombined className="w-4 h-4 mr-2" /> Analytics
+                                                </Button>
+                                            ) : (
+                                                <Button variant="outline" className="border-primary text-primary hover:bg-primary/5" onClick={() => setIsEditing(true)}>
+                                                    <Pencil className="w-4 h-4 mr-2" /> Edit
+                                                </Button>
+                                            )
+                                        )}
+                                        {canDelete && !isEditing && (
+                                            <Button variant="outline" className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => setShowDeleteConfirm(true)}>
+                                                <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                            </Button>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-12">
+                    <div className="lg:col-span-2 space-y-8">
+                        <section>
+                            <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                                <span className="w-1 h-6 bg-primary rounded-full"></span>
+                                About this Event
+                            </h3>
+                            {isEditing ? (
+                                <textarea
+                                    className="w-full rounded-md border border-slate-200 bg-slate-50 p-4 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 min-h-[200px]"
+                                    name="description"
+                                    value={tempEvent.description}
+                                    onChange={handleInputChange}
+                                />
+                            ) : (
+                                <p className="text-slate-600 leading-relaxed whitespace-pre-wrap text-lg">
+                                    {event.description}
+                                </p>
+                            )}
+                        </section>
+                    </div>
+
+                    <div className="space-y-6">
+                        <Card className="border-slate-200 shadow-sm overflow-hidden">
+                            <div className="bg-slate-50 border-b border-slate-100 p-4">
+                                <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                                    <CalendarClock className="w-5 h-5 text-primary" />
+                                    Date & Time
+                                </h4>
+                            </div>
+                            <CardContent className="p-4 space-y-4">
+                                <div>
+                                    <Label className="text-slate-500 text-xs uppercase tracking-wider">Starts</Label>
+                                    {isEditing ? (
+                                        <Input 
+                                            type="datetime-local" 
+                                            name="startAt" 
+                                            className="mt-1 bg-slate-50" 
+                                            value={tempEvent.startAt} 
+                                            onChange={handleInputChange} 
+                                        />
+                                    ) : (
+                                        <div className="text-slate-900 font-medium mt-1">{formatDateTime(event.startAt)}</div>
+                                    )}
+                                </div>
+                                <div className="pt-2 border-t border-slate-100">
+                                    <Label className="text-slate-500 text-xs uppercase tracking-wider">Ends</Label>
+                                    {isEditing ? (
+                                        <Input 
+                                            type="datetime-local" 
+                                            name="endAt" 
+                                            className="mt-1 bg-slate-50" 
+                                            value={tempEvent.endAt} 
+                                            onChange={handleInputChange} 
+                                        />
+                                    ) : (
+                                        <div className="text-slate-900 font-medium mt-1">{formatDateTime(event.endAt)}</div>
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="border-slate-200 shadow-sm overflow-hidden">
+                             <div className="bg-slate-50 border-b border-slate-100 p-4">
+                                <h4 className="font-semibold text-slate-900">Organizer</h4>
+                            </div>
+                            <CardContent className="p-4">
+                                {creatorId && creator ? (
+                                    <UserComponent
+                                        id={creatorId}
+                                        username={creator}
+                                        photo={creatorPhoto}
+                                        isMe={isEditable}
+                                    />
+                                ) : (
+                                    <div className="text-slate-500 italic">Unknown Organizer</div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
             </div>
+
+            {/* Delete Confirmation Modal Overlay */}
+            {showDeleteConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <Card className="w-full max-w-md mx-4 shadow-xl border-0">
+                        <div className="p-6">
+                            <h3 className="text-xl font-bold text-slate-900 mb-2">Confirm Deletion</h3>
+                            <p className="text-slate-600 mb-6">Are you sure you want to permanently delete this event? This action cannot be undone.</p>
+                            <div className="flex justify-end gap-3">
+                                <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
+                                <Button variant="destructive" onClick={confirmDelete}>Delete Event</Button>
+                            </div>
+                        </div>
+                    </Card>
+                </div>
+            )}
         </div>
     );
 }
-export default EventComponent
+
+export default EventComponent;

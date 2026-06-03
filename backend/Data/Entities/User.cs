@@ -7,4 +7,5 @@ public class User
     public string PasswordHash { get; set; } = null!;
     public string? Photo { get; set; } = null!;
     public string Role { get; set; } = "User"; 
+    public bool IsBanned { get; set; } = false;
 }

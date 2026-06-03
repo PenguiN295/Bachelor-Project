@@ -1,58 +1,64 @@
-
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import type Event from '../Interfaces/Event';
 import noPhoto from '../assets/nophoto.svg';
 import { formatDate } from '../utils/dateUtils';
+import { MapPin, Calendar, Users } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+
 interface EventCardProps {
     event: Event;
 }
 
-
-
 const EventCard: React.FC<EventCardProps> = ({ event }) => {
     const navigate = useNavigate();
+    
     const handleEventPress = () => {
-        if(event.slug)
-            navigate(`/event/${event.slug}`)
-    }
+        if (event.slug) navigate(`/event/${event.slug}`);
+    };
+
     return (
-        <button
+        <Card 
+            className="overflow-hidden cursor-pointer transition-all hover:shadow-md h-full flex flex-col group border-slate-200"
             onClick={handleEventPress}
-            className="text-start w-100"
-            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
         >
-            <div className="card h-100 shadow-sm">
-                {event.imageUrl ? (
-                    <img src={event.imageUrl} className="card-img-top"
-                        style={{ objectFit: 'cover', height: '180px' }} />
-                ) : (
-                    <div className="card h-100 shadow-sm">
-                        <img src={noPhoto} className="card-img-top" style={{ objectFit: 'cover', height: '180px' }} />
-                    </div>
-                )}
-                <div className="card-body">
-                    <div className="d-flex justify-content-between align-items-start mb-2">
-                        <h5 className="card-title mb-0 text-truncate">{event.title}</h5>
-                        <span className="badge bg-primary ms-2">
-                            {event.price === 0 ? "Free" : `$${event.price}`}
-                        </span>
-                    </div>
-                    <p className="card-text mb-1 small">
-                        <i className="bi bi-geo-alt me-1 text-primary"></i>
-                        {event.city}, {event.county}
-                    </p>
-                    <p className="card-text text-muted small mb-2">
-                        <i className="bi bi-calendar-event me-1 text-primary"></i>
-                        {formatDate(event.startAt)}
-                    </p>
-                    <p className="card-text text-muted small mb-0">
-                        <i className="bi bi-people me-1 text-primary"></i>
-                        {event.currentAttendees} / {event.maxAttendees}
-                    </p>
+            <div className="relative aspect-video w-full overflow-hidden bg-slate-100">
+                <img 
+                    src={event.imageUrl || noPhoto} 
+                    alt={event.title}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+                <div className="absolute top-3 right-3">
+                    <span className="bg-primary/90 backdrop-blur-sm text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold shadow-sm">
+                        {event.price === 0 ? "Free" : `$${event.price.toFixed(2)}`}
+                    </span>
                 </div>
             </div>
-        </button>
-
+            
+            <CardContent className="flex-1 p-5 flex flex-col">
+                <h3 className="font-bold text-lg text-slate-900 line-clamp-1 mb-3 group-hover:text-primary transition-colors">
+                    {event.title}
+                </h3>
+                
+                <div className="space-y-2 mt-auto">
+                    <div className="flex items-center text-sm text-slate-600">
+                        <MapPin className="w-4 h-4 mr-2 text-primary shrink-0" />
+                        <span className="truncate">{event.city}, {event.county}</span>
+                    </div>
+                    
+                    <div className="flex items-center text-sm text-slate-600">
+                        <Calendar className="w-4 h-4 mr-2 text-primary shrink-0" />
+                        <span className="truncate">{formatDate(event.startAt)}</span>
+                    </div>
+                    
+                    <div className="flex items-center text-sm text-slate-600">
+                        <Users className="w-4 h-4 mr-2 text-primary shrink-0" />
+                        <span>{event.currentAttendees} / {event.maxAttendees} attending</span>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
     );
 };
+
 export default EventCard;

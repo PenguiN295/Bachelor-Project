@@ -4,6 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import url from '../../config';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Loader2, ShieldCheck, KeyRound, User } from 'lucide-react';
 
 const ProfileActions: React.FC<{ modifyUser: 'username' | 'password' }> = ({ modifyUser }) => {
     const { updateUser, token } = useAuth();
@@ -32,13 +37,11 @@ const ProfileActions: React.FC<{ modifyUser: 'username' | 'password' }> = ({ mod
         onSuccess: () => {
             if (modifyUser === 'username' && formData.username.trim() !== '') {
                 updateUser(formData.username);
-            }
-            else
-            {
+            } else {
                 toast.success("Password updated successfully");
             }
             queryClient.invalidateQueries({ queryKey: ["userInfo"] })
-            navigate('/dashboard');
+            navigate('/profile');
         },
         onError: (error) => {
             console.error('Update failed:', error);
@@ -63,11 +66,11 @@ const ProfileActions: React.FC<{ modifyUser: 'username' | 'password' }> = ({ mod
         }
         if (modifyUser === 'password') {
             payload.Password = formData.password;
-            if (formData.password !== formData.confirmPassword ) {
+            if (formData.password !== formData.confirmPassword) {
                 toast.error("Passwords do not match");
                 return;
             }
-            if(formData.password.length < 6) {
+            if (formData.password.length < 6) {
                 toast.error("Password must be at least 6 characters long");
                 return;
             }
@@ -76,65 +79,99 @@ const ProfileActions: React.FC<{ modifyUser: 'username' | 'password' }> = ({ mod
         mutation.mutate(payload);
     };
 
-    const renderSubmitButton = () => (
-        <button type="submit" className="btn btn-primary" disabled={mutation.isPending}>
-            {mutation.isPending ? (
-                <><span className="spinner-border spinner-border-sm me-2"></span>Saving...</>
-            ) : 'Save Changes'}
-        </button>
-    );
-
     return (
-        <div className="container d-flex justify-content-center align-items-center vh-100">
-            <div className="card shadow-lg p-4" style={{ width: '100%', maxWidth: '400px', borderRadius: '12px' }}>
-                <h3 className="text-center mb-4">
+        <Card className="w-full max-w-md border-0 shadow-lg">
+            <CardHeader className="text-center pb-6">
+                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary">
+                    {modifyUser === 'username' ? <User className="w-6 h-6" /> : <KeyRound className="w-6 h-6" />}
+                </div>
+                <CardTitle className="text-2xl font-bold">
                     {modifyUser === 'username' ? 'Change Username' : 'Update Password'}
-                </h3>
-                <form onSubmit={handleSubmit}>
+                </CardTitle>
+                <CardDescription>
+                    {modifyUser === 'username' 
+                        ? 'Choose a unique username to represent you on the platform.' 
+                        : 'Ensure your account stays secure with a strong password.'}
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-6">
                     {modifyUser === 'username' ? (
-                        <div className="mb-3">
-                            <label className="form-label fw-bold">New Username</label>
-                            <input
+                        <div className="space-y-2">
+                            <Label htmlFor="username">New Username</Label>
+                            <Input
+                                id="username"
                                 name="username"
-                                className="form-control"
                                 value={formData.username}
                                 onChange={handleChange}
                                 placeholder="Enter new username"
+                                className="bg-slate-50"
+                                required
+                                disabled={mutation.isPending}
                             />
                         </div>
                     ) : (
-                        <>
-                            <div className="mb-3">
-                                <label className="form-label fw-bold">New Password</label>
-                                <input
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="password">New Password</Label>
+                                <Input
+                                    id="password"
                                     name="password"
-                                    className="form-control"
                                     type="password"
                                     placeholder="••••••••"
                                     onChange={handleChange}
+                                    className="bg-slate-50"
+                                    required
+                                    disabled={mutation.isPending}
                                 />
                             </div>
-                            <div className="mb-3">
-                                <label className="form-label fw-bold">Confirm Password</label>
-                                <input
+                            <div className="space-y-2">
+                                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                                <Input
+                                    id="confirmPassword"
                                     name="confirmPassword"
                                     type="password"
-                                    className="form-control"
                                     placeholder="••••••••"
                                     onChange={handleChange}
+                                    className="bg-slate-50"
+                                    required
+                                    disabled={mutation.isPending}
                                 />
                             </div>
-                        </>
+                        </div>
                     )}
-                    <div className="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <button type="button" className="btn btn-outline-secondary" onClick={() => navigate('/profile')}>
+
+                    <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                        <Button 
+                            type="button" 
+                            variant="ghost" 
+                            className="flex-1"
+                            onClick={() => navigate('/profile')}
+                            disabled={mutation.isPending}
+                        >
                             Cancel
-                        </button>
-                        {renderSubmitButton()}
+                        </Button>
+                        <Button 
+                            type="submit" 
+                            className="flex-1"
+                            disabled={mutation.isPending}
+                        >
+                            {mutation.isPending ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <ShieldCheck className="w-4 h-4 mr-2" />
+                                    Save Changes
+                                </>
+                            )}
+                        </Button>
                     </div>
                 </form>
-            </div>
-        </div>
+            </CardContent>
+        </Card>
     );
 }
 

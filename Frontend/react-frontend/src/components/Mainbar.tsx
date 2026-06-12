@@ -4,6 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Menu, Users, X, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+import NotificationBell from './NotificationBell';
+
 const Mainbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
@@ -27,7 +29,8 @@ const Mainbar: React.FC = () => {
             </div>
           </div>
           
-          <div className="hidden md:flex items-center">
+          <div className="hidden md:flex items-center gap-2">
+            <NotificationBell />
             <UserDropDown />
           </div>
 

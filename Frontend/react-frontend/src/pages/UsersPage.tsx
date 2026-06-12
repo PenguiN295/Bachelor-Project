@@ -17,7 +17,7 @@ const UsersPage: React.FC = () => {
     const { data: users, isLoading, error } = useQuery<UserResponse[]>({
         queryKey: ['admin-users'],
         queryFn: async () => {
-            const response = await fetch(`${url}/api/users`, {
+            const response = await fetch(`${url}/users`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (!response.ok) throw new Error("Failed to fetch users");

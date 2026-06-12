@@ -59,6 +59,22 @@ export const useCommunity = (slug: string) => {
         onError: () => toast.error("Could not leave community")
     });
 
+    const deleteMutation = useMutation({
+        mutationFn: async () => {
+            const response = await fetch(`${url}/api/communities/${slug}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!response.ok) throw new Error("Failed to delete community");
+            return response.text();
+        },
+        onSuccess: () => {
+            toast.success("Community deleted successfully!");
+            queryClient.invalidateQueries({ queryKey: ["communities"] });
+        },
+        onError: () => toast.error("Could not delete community")
+    });
+
     return {
         community: communityQuery.data ?? null,
         loading: communityQuery.isLoading,
@@ -66,6 +82,8 @@ export const useCommunity = (slug: string) => {
         join: joinMutation.mutate,
         isJoining: joinMutation.isPending,
         leave: leaveMutation.mutate,
-        isLeaving: leaveMutation.isPending
+        isLeaving: leaveMutation.isPending,
+        deleteCommunity: deleteMutation.mutate,
+        isDeleting: deleteMutation.isPending
     };
 };

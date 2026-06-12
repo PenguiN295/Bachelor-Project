@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useInView } from 'react-intersection-observer';
 import { useCommunity } from '../hooks/useCommunity';
@@ -10,12 +10,13 @@ import noPhoto from '../assets/nophoto.svg';
 import { formatDate } from '../utils/dateUtils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Users, CalendarDays, CalendarPlus, LogOut, Loader2, CalendarX } from 'lucide-react';
+import { Users, CalendarDays, CalendarPlus, LogOut, Loader2, CalendarX, Trash2 } from 'lucide-react';
 
 const CommunityPage: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
-    const { community, loading, join, leave, isJoining, isLeaving } = useCommunity(slug || '');
+    const { community, loading, join, leave, isJoining, isLeaving, deleteCommunity, isDeleting } = useCommunity(slug || '');
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     
     const { 
         events: communityEvents, 
@@ -43,6 +44,12 @@ const CommunityPage: React.FC = () => {
             </Button>
         </div>
     );
+
+    const handleDeleteCommunity = () => {
+        deleteCommunity();
+        setShowDeleteConfirm(false);
+        navigate('/communities');
+    };
 
     return (
         <div className="min-h-screen bg-slate-50 pb-12">
@@ -88,16 +95,26 @@ const CommunityPage: React.FC = () => {
                                         >
                                             <CalendarPlus className="w-4 h-4 mr-2" /> Create Event
                                         </Button>
-                                        <Button 
-                                            variant="outline"
-                                            className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                            onClick={() => leave()}
-                                            disabled={isLeaving || community.userRole === 'Owner'}
-                                            title={community.userRole === 'Owner' ? "Owner cannot leave" : ""}
-                                        >
-                                            <LogOut className="w-4 h-4 mr-2" /> 
-                                            {isLeaving ? 'Leaving...' : 'Leave'}
-                                        </Button>
+                                        
+                                        {community.userRole === 'Owner' ? (
+                                            <Button 
+                                                variant="outline"
+                                                className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                                onClick={() => setShowDeleteConfirm(true)}
+                                            >
+                                                <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                            </Button>
+                                        ) : (
+                                            <Button 
+                                                variant="outline"
+                                                className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                                onClick={() => leave()}
+                                                disabled={isLeaving}
+                                            >
+                                                <LogOut className="w-4 h-4 mr-2" /> 
+                                                {isLeaving ? 'Leaving...' : 'Leave'}
+                                            </Button>
+                                        )}
                                     </div>
                                 ) : (
                                     <Button 
@@ -117,7 +134,7 @@ const CommunityPage: React.FC = () => {
                             <div className="lg:col-span-3">
                                 <MemberList 
                                     slug={slug || ''} 
-                                    canRemove={community.userRole === 'Owner'} 
+                                    currentUserRole={community.userRole}
                                 />
                             </div>
                             
@@ -187,6 +204,25 @@ const CommunityPage: React.FC = () => {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Delete Confirmation Modal Overlay */}
+            {showDeleteConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <Card className="w-full max-w-md mx-4 shadow-xl border-0">
+                        <div className="p-6">
+                            <h3 className="text-xl font-bold text-slate-900 mb-2">Delete Community</h3>
+                            <p className="text-slate-600 mb-6">Are you sure you want to permanently delete this community? This action cannot be undone.</p>
+                            <div className="flex justify-end gap-3">
+                                <Button variant="outline" onClick={() => setShowDeleteConfirm(false)} disabled={isDeleting}>Cancel</Button>
+                                <Button variant="destructive" onClick={handleDeleteCommunity} disabled={isDeleting}>
+                                    {isDeleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                                    Delete Community
+                                </Button>
+                            </div>
+                        </div>
+                    </Card>
+                </div>
+            )}
         </div>
     );
 };

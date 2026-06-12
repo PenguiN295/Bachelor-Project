@@ -25,7 +25,7 @@ public class EventController : ControllerBase
     }
 
     [HttpPost("create-event")]
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = "User,Admin")]
     public async Task<IActionResult> CreateEvent([FromForm] EventRequest newEvent)
     {
         if (newEvent == null)
@@ -226,7 +226,7 @@ public class EventController : ControllerBase
     }
 
     [HttpPut("update-event/{slug}")]
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = "User,Admin")]
     public async Task<IActionResult> UpdateEvent(string slug, [FromBody] EventRequest eventRequest)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -279,8 +279,8 @@ public class EventController : ControllerBase
         }
         else if (existingEvent.CommunityId.HasValue)
         {
-            var isOwner = await _dbContext.Memberships.AnyAsync(m => m.CommunityId == existingEvent.CommunityId.Value && m.UserId == userGuid && m.Role == "Owner");
-            if (isOwner)
+            var membership = await _dbContext.Memberships.FirstOrDefaultAsync(m => m.CommunityId == existingEvent.CommunityId.Value && m.UserId == userGuid);
+            if (membership != null && (membership.Role == "Owner" || membership.Role == "Moderator"))
             {
                 canDelete = true;
             }
@@ -300,7 +300,7 @@ public class EventController : ControllerBase
     }
 
     [HttpPost("subscribe")]
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = "User,Admin")]
     public async Task<IActionResult> SubscribeToEvent([FromBody] SubscribeRequest sr)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -331,6 +331,34 @@ public class EventController : ControllerBase
                 EventId = ev.Id
             });
 
+            if (ev.CreatorId != userGuid)
+            {
+                var subscriber = await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userGuid);
+                string subscriberName = subscriber?.Username ?? "Someone";
+
+                var notificationExists = await _dbContext.Notifications.AnyAsync(n =>
+                    n.UserId == ev.CreatorId &&
+                    n.ActorId == userGuid &&
+                    n.Type == "EventSubscription" &&
+                    n.ReferenceId == ev.Id.ToString()
+                );
+
+                if (!notificationExists)
+                {
+                    _dbContext.Notifications.Add(new Notification
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = ev.CreatorId,
+                        ActorId = userGuid,
+                        Type = "EventSubscription",
+                        ReferenceId = ev.Id.ToString(),
+                        Message = $"{subscriberName} has subscribed to your event '{ev.Title}'!",
+                        IsRead = false,
+                        CreatedAt = DateTimeOffset.UtcNow
+                    });
+                }
+            }
+
             await _dbContext.SaveChangesAsync();
 
             await _dbContext.Events
@@ -353,7 +381,7 @@ public class EventController : ControllerBase
     }
 
     [HttpGet("subscribed-status/{slug}")]
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = "User,Admin")]
     public async Task<IActionResult> IsSubscribed(string slug)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -410,7 +438,7 @@ public class EventController : ControllerBase
     }
 
     [HttpGet("event/{slug}/analytics")]
-    [Authorize(Roles = "User")]
+    [Authorize(Roles = "User,Admin")]
     public async Task<IActionResult> GetEventAnalytics(string slug)
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);

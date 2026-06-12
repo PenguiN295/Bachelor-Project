@@ -3,6 +3,7 @@ import type Event from "../Interfaces/Event";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import UserComponent from "./UserComponent";
+import SubscribeComponent from "./SubscribeComponent";
 import { formatDateTime } from "../utils/dateUtils";
 import { Users, DollarSign, CalendarClock, ChartNoAxesCombined, Pencil, Trash2, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ export interface EventProp {
     isEditable?: boolean;
     canDelete?: boolean;
     isPast?: boolean;
+    isSubscribed?: boolean;
     onSave?: (updatedEvent: Event) => void;
     onDelete?: () => void;
     creator?: string | null;
@@ -22,7 +24,7 @@ export interface EventProp {
     creatorPhoto?: string | null;
 }
 
-const EventComponent: React.FC<EventProp> = ({ event, isEditable, canDelete, isPast, onSave, onDelete, creator, creatorId, creatorPhoto }) => {
+const EventComponent: React.FC<EventProp> = ({ event, isEditable, canDelete, isPast, isSubscribed = false, onSave, onDelete, creator, creatorId, creatorPhoto }) => {
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const [tempEvent, setTempEvent] = useState<Event>(event);
@@ -193,6 +195,10 @@ const EventComponent: React.FC<EventProp> = ({ event, isEditable, canDelete, isP
                     </div>
 
                     <div className="space-y-6">
+                        {!isEditable && (
+                            <SubscribeComponent event={event} isSubscribed={isSubscribed} />
+                        )}
+                        
                         <Card className="border-slate-200 shadow-sm overflow-hidden">
                             <div className="bg-slate-50 border-b border-slate-100 p-4">
                                 <h4 className="font-semibold text-slate-900 flex items-center gap-2">

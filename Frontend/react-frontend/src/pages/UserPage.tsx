@@ -28,7 +28,6 @@ const UserPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-6">
-                    {/* Profile Summary Card */}
                     <Card className="border-0 shadow-sm overflow-hidden">
                         <div className="h-24 bg-primary/10 w-full"></div>
                         <CardContent className="px-6 pb-6 relative">

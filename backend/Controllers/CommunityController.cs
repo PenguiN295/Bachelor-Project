@@ -236,7 +236,14 @@ public class CommunityController : ControllerBase
             }
         }
 
-        return Ok(members);
+        var sortedMembers = members.OrderBy(m => 
+        {
+            if (m.Role == "Owner") return 0;
+            if (m.Role == "Moderator") return 1;
+            return 2;
+        }).ToList();
+
+        return Ok(sortedMembers);
     }
 
     [HttpDelete("{slug}/members/{userId}")]
@@ -244,35 +251,103 @@ public class CommunityController : ControllerBase
     public async Task<IActionResult> RemoveMember(string slug, Guid userId)
     {
         var currentUserIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!Guid.TryParse(currentUserIdClaim, out var currentUserGuid))
-        {
-            return Unauthorized();
-        }
+        if (!Guid.TryParse(currentUserIdClaim, out var currentUserGuid)) return Unauthorized();
 
-        var community = await _dbContext.Communities
-            .AsNoTracking()
-            .FirstOrDefaultAsync(c => c.Slug == slug);
-
+        var community = await _dbContext.Communities.AsNoTracking().FirstOrDefaultAsync(c => c.Slug == slug);
         if (community == null) return NotFound("Community not found");
 
-        var currentMembership = await _dbContext.Memberships
-            .AsNoTracking()
-            .FirstOrDefaultAsync(m => m.CommunityId == community.Id && m.UserId == currentUserGuid);
+        var currentMembership = await _dbContext.Memberships.AsNoTracking().FirstOrDefaultAsync(m => m.CommunityId == community.Id && m.UserId == currentUserGuid);
+        var targetMembership = await _dbContext.Memberships.FirstOrDefaultAsync(m => m.CommunityId == community.Id && m.UserId == userId);
+        
+        if (targetMembership == null) return NotFound("Member not found in this community");
 
-        if (currentMembership == null || (currentMembership.Role != "Owner" && !User.IsInRole("Admin")))
+        bool canRemove = false;
+        if (User.IsInRole("Admin")) canRemove = true;
+        else if (currentMembership != null)
         {
-            return Forbid();
+            if (currentMembership.Role == "Owner" && targetMembership.Role != "Owner") canRemove = true;
+            if (currentMembership.Role == "Moderator" && targetMembership.Role == "Member") canRemove = true;
         }
 
-        var targetMembership = await _dbContext.Memberships
-            .FirstOrDefaultAsync(m => m.CommunityId == community.Id && m.UserId == userId);
-
-        if (targetMembership == null) return NotFound("Member not found in this community");
-        if (targetMembership.Role == "Owner") return BadRequest("Cannot remove the community owner");
+        if (!canRemove) return Forbid();
 
         _dbContext.Memberships.Remove(targetMembership);
         await _dbContext.SaveChangesAsync();
 
         return Ok("Member removed successfully");
+    }
+
+    [HttpPost("{slug}/members/{userId}/promote")]
+    [Authorize(Roles = "User,Admin")]
+    public async Task<IActionResult> PromoteMember(string slug, Guid userId)
+    {
+        var currentUserIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(currentUserIdClaim, out var currentUserGuid)) return Unauthorized();
+
+        var community = await _dbContext.Communities.AsNoTracking().FirstOrDefaultAsync(c => c.Slug == slug);
+        if (community == null) return NotFound();
+
+        var currentMembership = await _dbContext.Memberships.AsNoTracking().FirstOrDefaultAsync(m => m.CommunityId == community.Id && m.UserId == currentUserGuid);
+        if (currentMembership == null || (currentMembership.Role != "Owner" && !User.IsInRole("Admin"))) return Forbid();
+
+        var targetMembership = await _dbContext.Memberships.FirstOrDefaultAsync(m => m.CommunityId == community.Id && m.UserId == userId);
+        if (targetMembership == null) return NotFound("Member not found");
+        
+        if (targetMembership.Role == "Owner") return BadRequest("User is already owner");
+        
+        targetMembership.Role = "Moderator";
+        await _dbContext.SaveChangesAsync();
+        return Ok("Member promoted to Moderator");
+    }
+
+    [HttpPost("{slug}/members/{userId}/demote")]
+    [Authorize(Roles = "User,Admin")]
+    public async Task<IActionResult> DemoteMember(string slug, Guid userId)
+    {
+        var currentUserIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(currentUserIdClaim, out var currentUserGuid)) return Unauthorized();
+
+        var community = await _dbContext.Communities.AsNoTracking().FirstOrDefaultAsync(c => c.Slug == slug);
+        if (community == null) return NotFound();
+
+        var currentMembership = await _dbContext.Memberships.AsNoTracking().FirstOrDefaultAsync(m => m.CommunityId == community.Id && m.UserId == currentUserGuid);
+        if (currentMembership == null || (currentMembership.Role != "Owner" && !User.IsInRole("Admin"))) return Forbid();
+
+        var targetMembership = await _dbContext.Memberships.FirstOrDefaultAsync(m => m.CommunityId == community.Id && m.UserId == userId);
+        if (targetMembership == null) return NotFound("Member not found");
+        
+        if (targetMembership.Role != "Moderator") return BadRequest("Only Moderators can be demoted");
+        
+        targetMembership.Role = "Member";
+        await _dbContext.SaveChangesAsync();
+        return Ok("Moderator demoted to Member");
+    }
+
+    [HttpDelete("{slug}")]
+    [Authorize(Roles = "User,Admin")]
+    public async Task<IActionResult> DeleteCommunity(string slug)
+    {
+        var currentUserIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(currentUserIdClaim, out var currentUserGuid)) return Unauthorized();
+
+        var community = await _dbContext.Communities.FirstOrDefaultAsync(c => c.Slug == slug);
+        if (community == null) return NotFound("Community not found");
+
+        var currentMembership = await _dbContext.Memberships.AsNoTracking().FirstOrDefaultAsync(m => m.CommunityId == community.Id && m.UserId == currentUserGuid);
+        
+        if (currentMembership == null || (currentMembership.Role != "Owner" && !User.IsInRole("Admin")))
+        {
+            return Forbid();
+        }
+
+        if (community.Photo != null)
+        {
+            await _photoService.DeletePhotoAsync(community.Photo);
+        }
+
+        _dbContext.Communities.Remove(community);
+        await _dbContext.SaveChangesAsync();
+
+        return Ok("Community deleted successfully");
     }
 }

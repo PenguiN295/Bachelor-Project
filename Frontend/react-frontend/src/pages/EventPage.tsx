@@ -2,7 +2,6 @@ import { useParams } from "react-router-dom";
 import { useEvent } from "../hooks/useEvent";
 import LoadingState from "../components/LoadingState";
 import EventComponent from "../components/EventComponent";
-import SubscribeComponent from "../components/SubscribeComponent";
 import MapComponent from "../components/MapComponent";
 
 const EventPage: React.FC = () => {
@@ -33,6 +32,7 @@ const EventPage: React.FC = () => {
                 isEditable={isOwner}
                 canDelete={canDelete}
                 isPast={isPast}
+                isSubscribed={isSubscribed}
                 onSave={updateEvent} 
                 onDelete={deleteEvent} 
                 creator={creator?.name} 
@@ -41,10 +41,6 @@ const EventPage: React.FC = () => {
             />
             
             <div className="container mx-auto px-4 max-w-5xl mt-8 space-y-8">
-                {(!isOwner && !isPast) && (
-                    <SubscribeComponent event={event} isSubscribed={isSubscribed} />
-                )}
-                
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-[400px]">
                     <MapComponent position={{ lat: event.latitude, lng: event.longitude }} />
                 </div>

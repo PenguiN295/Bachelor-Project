@@ -48,12 +48,12 @@ function CategoryMultiSelect({ categories, value, onChange }: CategoryMultiSelec
           {selectedCategories.map((category) => (
             <span 
                 key={category.id} 
-                className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary border border-primary/20"
+                className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-semibold text-indigo-700 border border-indigo-200"
             >
               {category.name}
               <button
                 type="button"
-                className="ml-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-primary/20 hover:text-primary transition-colors focus:outline-none"
+                className="ml-2 inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-indigo-200 hover:text-indigo-800 transition-colors focus:outline-none"
                 aria-label={`Remove ${category.name}`}
                 onClick={(e) => {
                     e.stopPropagation();
@@ -70,14 +70,14 @@ function CategoryMultiSelect({ categories, value, onChange }: CategoryMultiSelec
       <div>
         <button
           type="button"
-          className="flex h-10 w-full items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex h-11 w-full items-center justify-between rounded-md border border-slate-300 bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           onClick={() => setIsOpen((prev) => !prev)}
           aria-expanded={isOpen}
         >
-          <span className="truncate text-slate-500">
-            {selectedCategories.length === 0 ? "Select categories..." : "Add more..."}
+          <span className="truncate text-slate-700 font-medium">
+            {selectedCategories.length === 0 ? "Select categories..." : "Add more categories..."}
           </span>
-          <ChevronDown className="h-4 w-4 opacity-50" />
+          <ChevronDown className="h-4 w-4 text-slate-500" />
         </button>
 
         {isOpen && (

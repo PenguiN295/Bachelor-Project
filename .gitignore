@@ -99,5 +99,7 @@ android/app/libs
 fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots
-
 GEMINI.md
+UI_PLAN.md
+COMMUNITY_MODERATION_PLAN.md
+NOTIFICATION_PLAN.md

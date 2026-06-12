@@ -4,6 +4,14 @@ import url from "../../config";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { generateGoogleCalendarLink, downloadIcsFile } from "../utils/calendarUtils";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { CalendarPlus, Download, Calendar as CalendarIcon, CheckCircle2, XCircle } from "lucide-react";
 
 interface SubscribeProp {
     isSubscribed: boolean,
@@ -15,7 +23,7 @@ const SubscribeComponent: React.FC<SubscribeProp> = ({ isSubscribed, event }) =>
     const { token } = useAuth();
     const queryClient = useQueryClient();
 
-    const { mutate } = useMutation({
+    const { mutate, isPending } = useMutation({
         mutationFn: async (intent: boolean) => {
             const response = await fetch(`${url}/subscribe`, {
                 method: "POST",
@@ -56,47 +64,57 @@ const SubscribeComponent: React.FC<SubscribeProp> = ({ isSubscribed, event }) =>
     const isPast = new Date(endAt) < new Date();
 
     return (
-        <div className="d-flex flex-column gap-2 mb-4" style={{ position: 'relative', zIndex: 1050 }}>
-            <button
-                className={`btn ${isSubscribed ? "btn-danger" : "btn-primary"} w-100 fw-semibold`}
-                disabled={(!isSubscribed && isFull) || isPast} 
+        <div className="flex flex-col gap-3 mb-6 relative z-10 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <h3 className="font-semibold text-slate-900 mb-1">Registration</h3>
+            <Button
+                variant={isSubscribed ? "destructive" : "default"}
+                className="w-full text-base h-12"
+                disabled={(!isSubscribed && isFull) || isPast || isPending} 
                 onClick={() => mutate(!isSubscribed)}
             >
-                {isSubscribed ? (isPast ? "You Attended" : "Unsubscribe") : isPast ? "Event Finished" : isFull ? "Sold Out" : "Register Now"}
-            </button>
+                {isSubscribed ? (
+                    isPast ? "You Attended" : (
+                        <>
+                            <XCircle className="w-5 h-5 mr-2" />
+                            Unsubscribe
+                        </>
+                    )
+                ) : isPast ? "Event Finished" : isFull ? "Sold Out" : (
+                    <>
+                        <CheckCircle2 className="w-5 h-5 mr-2" />
+                        Register Now
+                    </>
+                )}
+            </Button>
 
             {isSubscribed && !isPast && (
-                <div className="dropdown">
-                    <button 
-                        className="btn btn-outline-secondary w-100 fw-semibold dropdown-toggle" 
-                        type="button" 
-                        id="calendarDropdown" 
-                        data-bs-toggle="dropdown" 
-                        aria-expanded="false"
-                    >
-                        <i className="bi bi-calendar-plus me-2"></i>Add to Calendar
-                    </button>
-                    <ul className="dropdown-menu w-100 shadow-sm" aria-labelledby="calendarDropdown" style={{ zIndex: 1060 }}>
-                        <li>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="w-full text-base h-12 text-slate-700">
+                            <CalendarPlus className="w-5 h-5 mr-2 text-primary" />
+                            Add to Calendar
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="center" className="w-[calc(100vw-2rem)] sm:w-80">
+                        <DropdownMenuItem asChild className="cursor-pointer py-3">
                             <a 
-                                className="dropdown-item d-flex align-items-center" 
                                 href={generateGoogleCalendarLink(event)} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
+                                className="flex items-center w-full"
                             >
-                                <i className="bi bi-google me-2 text-danger"></i>Google Calendar
+                                <CalendarIcon className="w-4 h-4 mr-3 text-red-500" />
+                                <span className="font-medium">Google Calendar</span>
                             </a>
-                        </li>
-                        <li>
-                            <button 
-                                className="dropdown-item d-flex align-items-center" 
-                                onClick={() => downloadIcsFile(event)}
-                            >
-                                <i className="bi bi-download me-2 text-primary"></i>Download (.ics)
-                            </button>
-                        </li>
-                    </ul>
-                </div>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => downloadIcsFile(event)} className="cursor-pointer py-3">
+                            <div className="flex items-center w-full">
+                                <Download className="w-4 h-4 mr-3 text-primary" />
+                                <span className="font-medium">Download (.ics)</span>
+                            </div>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             )}
         </div>
     );

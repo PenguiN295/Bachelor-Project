@@ -9,10 +9,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useGlobalChat } from '../context/ChatContext';
 
 const NotificationBell: React.FC = () => {
     const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
     const navigate = useNavigate();
+    const { openChat } = useGlobalChat();
 
     const handleNotificationClick = (notification: any) => {
         if (!notification.isRead) {
@@ -21,9 +23,11 @@ const NotificationBell: React.FC = () => {
 
         // Navigate based on type
         if (notification.type === 'EventSubscription' && notification.referenceId) {
-            // we could navigate to the event analytics page or event page. 
-            // since we don't have the slug directly, we might just navigate to own-events or dashboard.
             navigate(`/own-events`);
+        } else if (notification.type === 'ChatMessage' && notification.actorId) {
+            openChat(notification.actorId);
+        } else if (notification.type === 'FriendRequest' || notification.type === 'FriendAccept') {
+            navigate(`/friends`);
         }
     };
 

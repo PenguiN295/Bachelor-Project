@@ -5,6 +5,8 @@ import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import RegisterPage from './pages/RegisterPage';
 import { AuthProvider } from './context/AuthContext';
+import { SignalRProvider } from './context/SignalRContext';
+import { ChatProvider } from './context/ChatContext';
 import UserPage from './pages/UserPage';
 import ChangePage from './pages/ChangePage';
 import CreateEventPage from './pages/CreateEventPage';
@@ -21,6 +23,7 @@ import CreateCommunityPage from './pages/CreateCommunityPage';
 import PastEventsPage from './pages/PastEventsPage';
 import EventAnalyticsPage from './pages/EventAnalyticsPage';
 import UsersPage from './pages/UsersPage';
+import FriendsPage from './pages/FriendsPage';
 
 const queryClient = new QueryClient();
 
@@ -29,35 +32,37 @@ const App: React.FC = () => {
     <BrowserRouter>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Toaster position="top-left" />
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+        <SignalRProvider>
+          <ChatProvider>
+            <Toaster position="top-left" />
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
 
-          <Route element={<ProtectedRoute />}>
-            <Route element={<Layout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/profile" element={<UserPage />} />
-              <Route path="/ChangePage/:modifyUser" element={<ChangePage />} />
-              <Route path="/CreateEvent" element={<CreateEventPage />} />
-              <Route path="/Event/:slug" element={<EventPage />} />
-              <Route path="/own-events" element={<OwnEventsPage />} />
-              <Route path="/profile/:userId" element={<ViewUserPage />} />
-              <Route path="/communities" element={<CommunitiesPage />} />
-              <Route path="/communities/create" element={<CreateCommunityPage />} />
-              <Route path="/community/:slug" element={<CommunityPage />} />
-              <Route path="/CreateEvent/:communityId" element={<CreateEventPage />} />
-              <Route path="/past-events" element={<PastEventsPage />} />
-              <Route path="/event-analytics/:slug" element={<EventAnalyticsPage />} />
-              <Route path="/admin/users" element={<UsersPage />} />
-            </Route>
-          </Route>
+              <Route element={<ProtectedRoute />}>
+                <Route element={<Layout />}>
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/profile" element={<UserPage />} />
+                  <Route path="/ChangePage/:modifyUser" element={<ChangePage />} />
+                  <Route path="/CreateEvent" element={<CreateEventPage />} />
+                  <Route path="/Event/:slug" element={<EventPage />} />
+                  <Route path="/own-events" element={<OwnEventsPage />} />
+                  <Route path="/profile/:userId" element={<ViewUserPage />} />
+                  <Route path="/communities" element={<CommunitiesPage />} />
+                  <Route path="/communities/create" element={<CreateCommunityPage />} />
+                  <Route path="/community/:slug" element={<CommunityPage />} />
+                  <Route path="/CreateEvent/:communityId" element={<CreateEventPage />} />
+                  <Route path="/past-events" element={<PastEventsPage />} />
+                  <Route path="/event-analytics/:slug" element={<EventAnalyticsPage />} />
+                  <Route path="/admin/users" element={<UsersPage />} />
+                  <Route path="/friends" element={<FriendsPage />} />
+                </Route>
+              </Route>
 
-
-
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </ChatProvider>
+        </SignalRProvider>
       </AuthProvider>
       </QueryClientProvider>
     </BrowserRouter>

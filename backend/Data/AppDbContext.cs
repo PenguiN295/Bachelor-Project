@@ -15,6 +15,8 @@ public class AppDbContext : DbContext
     public DbSet<Community> Communities { get; set; }
     public DbSet<CommunityMembership> Memberships { get; set; }
     public DbSet<Notification> Notifications { get; set; }
+    public DbSet<Friendship> Friendships { get; set; }
+    public DbSet<ChatMessage> ChatMessages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

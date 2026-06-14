@@ -41,6 +41,10 @@ const UserDropDown: React.FC = () => {
                     <CalendarDays className="mr-2 h-4 w-4 text-slate-500" />
                     <span>My Events</span>
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/friends')} className="cursor-pointer">
+                    <Users className="mr-2 h-4 w-4 text-slate-500" />
+                    <span>Friends</span>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/past-events')} className="cursor-pointer">
                     <History className="mr-2 h-4 w-4 text-slate-500" />
                     <span>Past Events</span>

@@ -5,14 +5,16 @@ import EventCardList from "../components/EventCardList";
 import LoadingState from "../components/LoadingState";
 import { useEvents } from "../hooks/useEvents";
 import { useUser } from "../hooks/useUser";
+import { useFriends } from "../hooks/useFriends";
 import noPhoto from "../assets/nophoto.svg";
 import { useAuth } from "../context/AuthContext";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import url from "../../config";
 import { toast } from "sonner";
-import { CalendarDays, Lock, Unlock, Loader2, CalendarX } from "lucide-react";
+import { CalendarDays, Lock, Unlock, Loader2, CalendarX, UserPlus, UserCheck, UserMinus, Clock, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useGlobalChat } from "../context/ChatContext";
 
 const ViewUserPage: React.FC = () => {
     const { userId } = useParams<{ userId: string }>();
@@ -24,13 +26,21 @@ const ViewUserPage: React.FC = () => {
         isFetchingNextPage
     } = useEvents(userId);
     const { data: user, isLoading: userLoading } = useUser(userId?? '');
-    const { role, token } = useAuth();
+    const { role, token, userId: currentUserId } = useAuth();
     const queryClient = useQueryClient();
+    const { openChat } = useGlobalChat();
+    
+    const { friends, pendingRequests, sendRequest, acceptRequest, removeFriend, isSending, isAccepting, isRemoving } = useFriends();
+
+    const isMe = currentUserId === userId;
+    const isFriend = friends.find(f => f.userId === userId);
+    const pendingSent = pendingRequests.find(p => p.userId === userId && p.isRequester);
+    const pendingReceived = pendingRequests.find(p => p.userId === userId && !p.isRequester);
 
     const banMutation = useMutation({
         mutationFn: async (isBanning: boolean) => {
             const action = isBanning ? 'ban' : 'unban';
-            const response = await fetch(`${url}/user/${userId}/${action}`, {
+            const response = await fetch(`${url}/api/user/${userId}/${action}`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -59,8 +69,8 @@ const ViewUserPage: React.FC = () => {
             <div className="max-w-5xl mx-auto">
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-12">
                     <div className="h-32 bg-slate-100 w-full relative">
-                         {role === 'Admin' && user?.role !== 'Admin' && (
-                            <div className="absolute top-4 right-4">
+                         {role === 'Admin' && user?.role !== 'Admin' && !isMe && (
+                            <div className="absolute top-4 right-4 z-10">
                                 <Button 
                                     variant={user?.isBanned ? "secondary" : "destructive"}
                                     onClick={() => banMutation.mutate(!user?.isBanned)}
@@ -79,7 +89,7 @@ const ViewUserPage: React.FC = () => {
                             </div>
                         )}
                     </div>
-                    <div className="px-8 pb-8 relative flex flex-col sm:flex-row items-center sm:items-end gap-6">
+                    <div className="px-8 pb-8 relative flex flex-col md:flex-row items-center md:items-end gap-6">
                         <div className="-mt-16">
                             <Avatar className="h-32 w-32 border-4 border-white shadow-lg bg-white">
                                 <AvatarImage src={user?.photo || noPhoto} className="object-cover" />
@@ -88,8 +98,8 @@ const ViewUserPage: React.FC = () => {
                                 </AvatarFallback>
                             </Avatar>
                         </div>
-                        <div className="flex-1 text-center sm:text-left pb-2">
-                            <h1 className="text-3xl font-bold text-slate-900 flex items-center justify-center sm:justify-start gap-3">
+                        <div className="flex-1 text-center md:text-left pb-2">
+                            <h1 className="text-3xl font-bold text-slate-900 flex flex-wrap items-center justify-center md:justify-start gap-3">
                                 {user?.username}
                                 {user?.isBanned && (
                                     <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-600 uppercase tracking-wide">
@@ -97,11 +107,43 @@ const ViewUserPage: React.FC = () => {
                                     </span>
                                 )}
                             </h1>
-                            <div className="flex items-center justify-center sm:justify-start mt-1 text-slate-500 font-medium">
+                            <div className="flex items-center justify-center md:justify-start mt-1 text-slate-500 font-medium">
                                 <CalendarDays className="w-4 h-4 mr-2 text-primary/70" />
                                 <span>Member since 2026</span>
                             </div>
                         </div>
+                        
+                        {!isMe && (
+                            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0 pb-2">
+                                {isFriend ? (
+                                    <>
+                                        <Button className="w-full sm:w-auto" onClick={() => openChat(userId!)}>
+                                            <MessageCircle className="w-4 h-4 mr-2" /> Message
+                                        </Button>
+                                        <Button 
+                                            variant="outline" 
+                                            className="w-full sm:w-auto text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+                                            onClick={() => removeFriend(isFriend.id)}
+                                            disabled={isRemoving}
+                                        >
+                                            <UserMinus className="w-4 h-4 mr-2" /> Unfriend
+                                        </Button>
+                                    </>
+                                ) : pendingSent ? (
+                                    <Button variant="outline" className="w-full sm:w-auto border-slate-300" disabled>
+                                        <Clock className="w-4 h-4 mr-2" /> Request Pending
+                                    </Button>
+                                ) : pendingReceived ? (
+                                    <Button className="w-full sm:w-auto" onClick={() => acceptRequest(pendingReceived.id)} disabled={isAccepting}>
+                                        <UserCheck className="w-4 h-4 mr-2" /> Accept Request
+                                    </Button>
+                                ) : (
+                                    <Button className="w-full sm:w-auto" onClick={() => sendRequest(userId!)} disabled={isSending}>
+                                        <UserPlus className="w-4 h-4 mr-2" /> Add Friend
+                                    </Button>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 

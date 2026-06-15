@@ -51,16 +51,26 @@ export const SignalRProvider: React.FC<{ children: React.ReactNode }> = ({ child
                     });
 
                     connection.on('ReceiveMessage', (message: any) => {
-                        queryClient.setQueryData(['conversation', message.senderId], (oldData: any) => {
+                        const senderId = message.senderId.toLowerCase();
+                        queryClient.setQueryData(['conversation', senderId], (oldData: any) => {
                             if (!oldData) return [message];
+                            if (oldData.find((m: any) => m.id === message.id)) return oldData;
                             return [...oldData, message];
                         });
+                        
+                        const receiverId = message.receiverId.toLowerCase();
+                        queryClient.setQueryData(['conversation', receiverId], (oldData: any) => {
+                            if (!oldData) return [message];
+                            if (oldData.find((m: any) => m.id === message.id)) return oldData;
+                            return [...oldData, message];
+                        });
+
                         queryClient.invalidateQueries({ queryKey: ["chat-partners"] });
                     });
                 })
                 .catch(err => console.error('SignalR Connection Error: ', err));
 
-            return () => {
+            return () => {  
                 connection.off('ReceiveNotification');
                 connection.off('FriendRequestAccepted');
                 connection.off('ReceiveMessage');

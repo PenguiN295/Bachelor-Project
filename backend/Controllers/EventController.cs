@@ -454,14 +454,93 @@ public class EventController : ControllerBase
 
         var totalSubscribers = await _dbContext.Subscriptions.CountAsync(s => s.EventId == ev.Id);
         
+        var feedbacksRaw = await _dbContext.EventFeedbacks
+            .AsNoTracking()
+            .Where(f => f.EventId == ev.Id)
+            .ToListAsync();
+
+        var userIds = feedbacksRaw.Select(f => f.UserId).Distinct().ToList();
+        var users = await _dbContext.Users.AsNoTracking().Where(u => userIds.Contains(u.Id)).ToDictionaryAsync(u => u.Id);
+
+        var feedbacks = feedbacksRaw.Select(f => new EventFeedbackResponse
+        {
+            Id = f.Id,
+            EventId = f.EventId,
+            UserId = f.IsAnonymous ? null : f.UserId,
+            Username = f.IsAnonymous ? "Anonymous Attendee" : (users.TryGetValue(f.UserId, out var u) ? u.Username : "Unknown"),
+            Photo = f.IsAnonymous ? null : (users.TryGetValue(f.UserId, out var pu) && pu.Photo != null ? _photoService.BuildUrl(pu.Photo) : null),
+            Rating = f.Rating,
+            Comment = f.Comment,
+            IsAnonymous = f.IsAnonymous,
+            CreatedAt = f.CreatedAt
+        }).OrderByDescending(f => f.CreatedAt).ToList();
+
+        var averageRating = feedbacks.Any() ? feedbacks.Average(f => f.Rating) : (double?)null;
+
         var analytics = new EventAnalyticsResponse
         {
             TotalSubscribers = totalSubscribers,
             MaxCapacity = ev.MaxAttendees,
             AttendanceRate = ev.MaxAttendees > 0 ? (double)totalSubscribers / ev.MaxAttendees * 100 : 0,
-            TotalRevenue = totalSubscribers * ev.Price
+            TotalRevenue = totalSubscribers * ev.Price,
+            AverageRating = averageRating,
+            Feedbacks = feedbacks
         };
 
         return Ok(analytics);
+    }
+
+    [HttpGet("event/{slug}/feedback-status")]
+    [Authorize(Roles = "User,Admin")]
+    public async Task<IActionResult> GetFeedbackStatus(string slug)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdClaim, out var userGuid)) return Unauthorized();
+
+        var ev = await _dbContext.Events.AsNoTracking().FirstOrDefaultAsync(e => e.Slug == slug);
+        if (ev == null) return NotFound("Event not found");
+
+        var isSubscribed = await _dbContext.Subscriptions.AnyAsync(s => s.UserId == userGuid && s.EventId == ev.Id);
+        var isPast = ev.EndAt < DateTimeOffset.UtcNow;
+        var hasReviewed = await _dbContext.EventFeedbacks.AnyAsync(f => f.UserId == userGuid && f.EventId == ev.Id);
+
+        return Ok(new { canReview = isPast && isSubscribed, hasReviewed });
+    }
+
+    [HttpPost("event/{slug}/feedback")]
+    [Authorize(Roles = "User,Admin")]
+    public async Task<IActionResult> SubmitFeedback(string slug, [FromBody] EventFeedbackRequest request)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdClaim, out var userGuid)) return Unauthorized();
+
+        if (request.Rating < 1 || request.Rating > 10) return BadRequest("Rating must be between 1 and 10");
+
+        var ev = await _dbContext.Events.AsNoTracking().FirstOrDefaultAsync(e => e.Slug == slug);
+        if (ev == null) return NotFound("Event not found");
+
+        if (ev.EndAt >= DateTimeOffset.UtcNow) return BadRequest("Cannot review an event that hasn't finished yet");
+
+        var isSubscribed = await _dbContext.Subscriptions.AnyAsync(s => s.UserId == userGuid && s.EventId == ev.Id);
+        if (!isSubscribed) return Forbid("Only attendees can leave feedback");
+
+        var hasReviewed = await _dbContext.EventFeedbacks.AnyAsync(f => f.UserId == userGuid && f.EventId == ev.Id);
+        if (hasReviewed) return BadRequest("You have already reviewed this event");
+
+        var feedback = new EventFeedback
+        {
+            Id = Guid.NewGuid(),
+            EventId = ev.Id,
+            UserId = userGuid,
+            Rating = request.Rating,
+            Comment = request.Comment,
+            IsAnonymous = request.IsAnonymous,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+
+        _dbContext.EventFeedbacks.Add(feedback);
+        await _dbContext.SaveChangesAsync();
+
+        return Ok(new { status = "Feedback submitted successfully" });
     }
 }

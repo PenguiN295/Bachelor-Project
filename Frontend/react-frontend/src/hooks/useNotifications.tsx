@@ -26,7 +26,7 @@ export const useNotifications = () => {
             return response.json();
         },
         enabled: !!token && !!userId,
-        refetchInterval: 30000, // Poll every 30 seconds
+        refetchInterval: 30000,
     });
 
     const markAsReadMutation = useMutation({

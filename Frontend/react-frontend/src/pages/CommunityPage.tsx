@@ -9,8 +9,8 @@ import MemberList from '../components/MemberList';
 import noPhoto from '../assets/nophoto.svg';
 import { formatDate } from '../utils/dateUtils';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Users, CalendarDays, CalendarPlus, LogOut, Loader2, CalendarX, Trash2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Users, CalendarDays, CalendarPlus, LogOut, Loader2, CalendarX, Trash2, Info, ShieldCheck } from 'lucide-react';
 
 const CommunityPage: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -53,6 +53,7 @@ const CommunityPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-slate-50 pb-12">
+            {/* Hero Banner */}
             <div className="w-full h-64 md:h-80 relative overflow-hidden bg-slate-900">
                 <img 
                     src={community.photo || noPhoto} 
@@ -61,10 +62,12 @@ const CommunityPage: React.FC = () => {
                 />
             </div>
 
-            <div className="container mx-auto px-4 max-w-6xl relative -mt-24 sm:-mt-32">
-                <Card className="border-0 shadow-md overflow-visible bg-white">
+            <div className="container mx-auto px-4 max-w-7xl relative -mt-24 sm:-mt-32">
+                
+                {/* Header Card */}
+                <Card className="border-0 shadow-md overflow-visible bg-white mb-8">
                     <CardContent className="p-6 sm:p-10">
-                        <div className="flex flex-col sm:flex-row gap-6 sm:items-end -mt-16 sm:-mt-24 mb-6">
+                        <div className="flex flex-col sm:flex-row gap-6 sm:items-end -mt-16 sm:-mt-24 mb-2">
                             <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl border-4 border-white shadow-lg bg-white shrink-0 overflow-hidden">
                                 <img 
                                     src={community.photo || noPhoto} 
@@ -89,8 +92,7 @@ const CommunityPage: React.FC = () => {
                                 {community.isJoined ? (
                                     <div className="flex flex-col sm:flex-row gap-3 w-full">
                                         <Button 
-                                            variant="outline"
-                                            className="border-primary text-primary hover:bg-primary/5"
+                                            className="w-full sm:w-auto shadow-sm"
                                             onClick={() => navigate(`/CreateEvent/${community.id}`)}
                                         >
                                             <CalendarPlus className="w-4 h-4 mr-2" /> Create Event
@@ -99,7 +101,7 @@ const CommunityPage: React.FC = () => {
                                         {community.userRole === 'Owner' ? (
                                             <Button 
                                                 variant="outline"
-                                                className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                                className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive shadow-sm"
                                                 onClick={() => setShowDeleteConfirm(true)}
                                             >
                                                 <Trash2 className="w-4 h-4 mr-2" /> Delete
@@ -107,7 +109,7 @@ const CommunityPage: React.FC = () => {
                                         ) : (
                                             <Button 
                                                 variant="outline"
-                                                className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                                className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive shadow-sm"
                                                 onClick={() => leave()}
                                                 disabled={isLeaving}
                                             >
@@ -119,7 +121,7 @@ const CommunityPage: React.FC = () => {
                                 ) : (
                                     <Button 
                                         size="lg"
-                                        className="w-full sm:w-auto"
+                                        className="w-full sm:w-auto shadow-sm"
                                         onClick={() => join()}
                                         disabled={isJoining}
                                     >
@@ -128,81 +130,90 @@ const CommunityPage: React.FC = () => {
                                 )}
                             </div>
                         </div>
-
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-8 border-t border-slate-100">
-                            {/* Left Sidebar - Members */}
-                            <div className="lg:col-span-3">
-                                <MemberList 
-                                    slug={slug || ''} 
-                                    currentUserRole={community.userRole}
-                                />
-                            </div>
-                            
-                            {/* Main Content */}
-                            <div className="lg:col-span-6 space-y-10">
-                                <section>
-                                    <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-                                        <span className="w-1 h-6 bg-primary rounded-full"></span>
-                                        About
-                                    </h3>
-                                    <p className="text-slate-600 leading-relaxed whitespace-pre-wrap text-lg">
-                                        {community.description}
-                                    </p>
-                                </section>
-
-                                <section>
-                                    <div className="flex justify-between items-center mb-6">
-                                        <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                                            <span className="w-1 h-6 bg-primary rounded-full"></span>
-                                            Community Events
-                                        </h3>
-                                    </div>
-                                    
-                                    {eventsLoading ? (
-                                        <div className="py-12"><LoadingState /></div>
-                                    ) : communityEvents.length > 0 ? (
-                                        <>
-                                            <EventCardList events={communityEvents} />
-                                            <div ref={ref} className="py-8 flex justify-center">
-                                                {isFetchingNextPage && (
-                                                    <Loader2 className="w-6 h-6 text-primary animate-spin" />
-                                                )}
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div className="bg-slate-50 rounded-xl border border-slate-100 p-12 text-center">
-                                            <div className="mx-auto w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
-                                                <CalendarX className="w-8 h-8 text-slate-300" />
-                                            </div>
-                                            <h4 className="text-lg font-semibold text-slate-900 mb-1">No upcoming events</h4>
-                                            <p className="text-slate-500 mb-4">There are no events scheduled for this community yet.</p>
-                                            {community.isJoined && (
-                                                <Button variant="outline" onClick={() => navigate(`/CreateEvent/${community!.id}`)}>
-                                                    Create the first one!
-                                                </Button>
-                                            )}
-                                        </div>
-                                    )}
-                                </section>
-                            </div>
-                            
-                            {/* Right Sidebar - Rules */}
-                            <div className="lg:col-span-3">
-                                <Card className="bg-slate-50 border-slate-100 shadow-sm">
-                                    <CardContent className="p-6">
-                                        <h3 className="font-bold text-slate-900 mb-4">Community Rules</h3>
-                                        <ol className="list-decimal list-inside space-y-3 text-sm text-slate-600">
-                                            <li>Be respectful to all members.</li>
-                                            <li>No spamming or self-promotion.</li>
-                                            <li>Follow the event guidelines.</li>
-                                            <li>Have fun and participate!</li>
-                                        </ol>
-                                    </CardContent>
-                                </Card>
-                            </div>
-                        </div>
                     </CardContent>
                 </Card>
+
+                <div className="flex flex-col lg:flex-row gap-8">
+                    
+                    {/* Left Sidebar - Metadata & People */}
+                    <aside className="w-full lg:w-80 shrink-0 space-y-6">
+                        {/* About Card */}
+                        <Card className="border-slate-200 shadow-sm">
+                            <CardHeader className="bg-slate-50 border-b border-slate-100 py-4">
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <Info className="w-5 h-5 text-primary" />
+                                    About
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-5">
+                                <p className="text-slate-600 leading-relaxed whitespace-pre-wrap text-sm md:text-base">
+                                    {community.description}
+                                </p>
+                            </CardContent>
+                        </Card>
+
+                        {/* Rules Card */}
+                        <Card className="border-slate-200 shadow-sm">
+                            <CardHeader className="bg-slate-50 border-b border-slate-100 py-4">
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <ShieldCheck className="w-5 h-5 text-primary" />
+                                    Community Rules
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-5">
+                                <ol className="list-decimal list-inside space-y-3 text-sm text-slate-600">
+                                    <li>Be respectful to all members.</li>
+                                    <li>No spamming or self-promotion.</li>
+                                    <li>Follow the event guidelines.</li>
+                                    <li>Have fun and participate!</li>
+                                </ol>
+                            </CardContent>
+                        </Card>
+
+                        {/* Member List Component */}
+                        <MemberList 
+                            slug={slug || ''} 
+                            currentUserRole={community.userRole}
+                        />
+                    </aside>
+                    
+                    {/* Main Content - Events */}
+                    <main className="flex-1 min-w-0">
+                        <div className="mb-6 bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div>
+                                <h2 className="text-2xl font-bold text-slate-900">Community Events</h2>
+                                <p className="text-slate-500 mt-1">Upcoming and past events in this community.</p>
+                            </div>
+                        </div>
+                        
+                        {eventsLoading ? (
+                            <div className="py-12"><LoadingState /></div>
+                        ) : communityEvents.length > 0 ? (
+                            <>
+                                <EventCardList events={communityEvents} />
+                                <div ref={ref} className="py-8 flex justify-center">
+                                    {isFetchingNextPage && (
+                                        <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                                    )}
+                                </div>
+                            </>
+                        ) : (
+                            <div className="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-sm">
+                                <div className="mx-auto w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 shadow-sm">
+                                    <CalendarX className="w-8 h-8 text-slate-300" />
+                                </div>
+                                <h4 className="text-lg font-semibold text-slate-900 mb-1">No upcoming events</h4>
+                                <p className="text-slate-500 mb-6">There are no events scheduled for this community yet.</p>
+                                {community.isJoined && (
+                                    <Button variant="outline" onClick={() => navigate(`/CreateEvent/${community!.id}`)}>
+                                        Create the first one!
+                                    </Button>
+                                )}
+                            </div>
+                        )}
+                    </main>
+
+                </div>
             </div>
 
             {/* Delete Confirmation Modal Overlay */}

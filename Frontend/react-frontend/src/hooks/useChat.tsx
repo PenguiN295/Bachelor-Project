@@ -29,7 +29,7 @@ export const useChat = (partnerId?: string) => {
     });
 
     const conversationQuery = useQuery({
-        queryKey: ["conversation", partnerId],
+        queryKey: ["conversation", partnerId?.toLowerCase()],
         queryFn: async (): Promise<ChatMessageResponse[]> => {
             const response = await fetch(`${url}/api/chat/conversation/${partnerId}`, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -55,8 +55,9 @@ export const useChat = (partnerId?: string) => {
         },
         onSuccess: (newMessage) => {
             // Optimistically update the conversation cache
-            queryClient.setQueryData(["conversation", partnerId], (oldData: any) => {
+            queryClient.setQueryData(["conversation", partnerId?.toLowerCase()], (oldData: any) => {
                 if (!oldData) return [newMessage];
+                if (oldData.find((m: any) => m.id === newMessage.id)) return oldData;
                 return [...oldData, newMessage];
             });
             queryClient.invalidateQueries({ queryKey: ["chat-partners"] });

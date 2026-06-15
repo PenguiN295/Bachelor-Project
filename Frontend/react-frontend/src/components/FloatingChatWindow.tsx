@@ -53,7 +53,7 @@ const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({ partnerId, onCl
     if (!activePartner) return null;
 
     return (
-        <div className="fixed z-50 sm:bottom-6 sm:right-6 sm:w-[380px] sm:h-[600px] sm:rounded-2xl inset-0 w-full h-full sm:border border-slate-200 shadow-2xl flex flex-col bg-white overflow-hidden animate-in slide-in-from-bottom-10 sm:slide-in-from-bottom-5">
+        <div className="fixed z-50 inset-0 sm:inset-auto sm:bottom-6 sm:right-6 sm:w-[320px] sm:h-[500px] sm:rounded-2xl w-full h-full sm:border border-slate-200 shadow-2xl flex flex-col bg-white overflow-hidden animate-in slide-in-from-bottom-10 sm:slide-in-from-bottom-5">
             {/* Header */}
             <div className="h-16 px-4 bg-primary text-primary-foreground flex items-center justify-between shrink-0 shadow-sm z-10">
                 <div className="flex items-center gap-3 min-w-0">

@@ -17,6 +17,7 @@ public class AppDbContext : DbContext
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<Friendship> Friendships { get; set; }
     public DbSet<ChatMessage> ChatMessages { get; set; }
+    public DbSet<EventFeedback> EventFeedbacks { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

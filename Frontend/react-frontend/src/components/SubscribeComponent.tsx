@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CalendarPlus, Download, Calendar as CalendarIcon, CheckCircle2, XCircle } from "lucide-react";
+import FeedbackModal from "./FeedbackModal";
 
 interface SubscribeProp {
     isSubscribed: boolean,
@@ -66,26 +67,33 @@ const SubscribeComponent: React.FC<SubscribeProp> = ({ isSubscribed, event }) =>
     return (
         <div className="flex flex-col gap-3 mb-6 relative z-10 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
             <h3 className="font-semibold text-slate-900 mb-1">Registration</h3>
-            <Button
-                variant={isSubscribed ? "destructive" : "default"}
-                className="w-full text-base h-12"
-                disabled={(!isSubscribed && isFull) || isPast || isPending} 
-                onClick={() => mutate(!isSubscribed)}
-            >
-                {isSubscribed ? (
-                    isPast ? "You Attended" : (
+            
+            {(!isPast || !isSubscribed) && (
+                <Button
+                    variant={isSubscribed ? "destructive" : "default"}
+                    className="w-full text-base h-12"
+                    disabled={(!isSubscribed && isFull) || isPast || isPending} 
+                    onClick={() => mutate(!isSubscribed)}
+                >
+                    {isSubscribed ? (
+                        isPast ? "You Attended" : (
+                            <>
+                                <XCircle className="w-5 h-5 mr-2" />
+                                Unsubscribe
+                            </>
+                        )
+                    ) : isPast ? "Event Finished" : isFull ? "Sold Out" : (
                         <>
-                            <XCircle className="w-5 h-5 mr-2" />
-                            Unsubscribe
+                            <CheckCircle2 className="w-5 h-5 mr-2" />
+                            Register Now
                         </>
-                    )
-                ) : isPast ? "Event Finished" : isFull ? "Sold Out" : (
-                    <>
-                        <CheckCircle2 className="w-5 h-5 mr-2" />
-                        Register Now
-                    </>
-                )}
-            </Button>
+                    )}
+                </Button>
+            )}
+
+            {isPast && isSubscribed && (
+                <FeedbackModal slug={slug!} />
+            )}
 
             {isSubscribed && !isPast && (
                 <DropdownMenu>

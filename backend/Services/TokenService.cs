@@ -22,6 +22,7 @@ public class TokenService : ITokenService
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.NameId, user.Id.ToString()),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // Required for SignalR UserIdentifier
             new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
             new Claim(ClaimTypes.Role, user.Role) 
         };

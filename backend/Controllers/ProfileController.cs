@@ -73,6 +73,60 @@ public class ProfileController : ControllerBase
         return Ok(new { user.Username, user.Id, Photo = user.Photo != null ? _photoService.BuildUrl(user.Photo) : null, Role = user.Role });
     }
 
+    [HttpPost("update-photo")]
+    [Authorize(Roles = "User,Admin")]
+    public async Task<IActionResult> UpdatePhoto([FromForm] IFormFile photo)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdClaim, out var userGuid)) return Unauthorized();
+
+        var user = await _dbContext.Users.FindAsync(userGuid);
+        if (user == null) return NotFound("User not found");
+
+        if (photo == null || photo.Length == 0) return BadRequest("No photo provided");
+
+        var result = await _photoService.AddPhotoAsync(photo);
+        if (result == null) return BadRequest("Failed to upload photo");
+
+        if (!string.IsNullOrEmpty(user.Photo))
+        {
+            await _photoService.DeletePhotoAsync(user.Photo);
+        }
+
+        user.Photo = result.PublicId;
+        await _dbContext.SaveChangesAsync();
+
+        return Ok(new { photoUrl = _photoService.BuildUrl(user.Photo) });
+    }
+
+    [HttpDelete("delete-account")]
+    [Authorize(Roles = "User,Admin")]
+    public async Task<IActionResult> DeleteAccount()
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdClaim, out var userGuid)) return Unauthorized();
+
+        var user = await _dbContext.Users.FindAsync(userGuid);
+        if (user == null) return NotFound("User not found");
+
+        if (!string.IsNullOrEmpty(user.Photo))
+        {
+            await _photoService.DeletePhotoAsync(user.Photo);
+        }
+
+        // Optional: delete event photos created by user if you want to prevent wasted space
+        var userEvents = await _dbContext.Events.Where(e => e.CreatorId == userGuid && e.ImageUrl != null).ToListAsync();
+        foreach (var ev in userEvents)
+        {
+            await _photoService.DeletePhotoAsync(ev.ImageUrl);
+        }
+
+        _dbContext.Users.Remove(user);
+        await _dbContext.SaveChangesAsync();
+
+        return Ok("Account deleted successfully");
+    }
+
     [HttpGet("user/{userId}")]
     [Authorize(Roles = "User,Admin")]
     public async Task<IActionResult> GetUserInfoById(Guid userId)

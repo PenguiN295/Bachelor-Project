@@ -15,6 +15,7 @@ interface AuthContextType {
     logout: () => void;
     register: (newToken: string) => void;
     updateUser: (newUsername: string) => void;
+    updatePhoto: (newPhotoUrl: string) => void;
     loading: boolean
 }
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -60,6 +61,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         queryClient.setQueryData(["userInfo", token], (old: any) => ({ ...old, username: newUsername }));
         toast.success("Username updated successfully")
     };
+    const updatePhoto = (newPhotoUrl: string) => {
+        queryClient.setQueryData(["userInfo", token], (old: any) => ({ ...old, photo: newPhotoUrl }));
+    };
     return (
         <AuthContext.Provider value={{ 
             userId: userInfo?.id || null,
@@ -71,7 +75,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             logout, 
             register, 
             loading: isLoading, 
-            updateUser 
+            updateUser,
+            updatePhoto
         }}>
             {children}
         </AuthContext.Provider>

@@ -32,7 +32,7 @@ const EventAnalyticsPage: React.FC = () => {
         { name: 'Attendees', value: analytics.totalSubscribers },
         { name: 'Remaining Capacity', value: Math.max(0, analytics.maxCapacity - analytics.totalSubscribers) }
     ];
-    const COLORS = ['#4f46e5', '#f1f5f9'];
+    const COLORS = ['#4f46e5', '#f7df09'];
 
     const eventName = slug?.split('-').slice(0, -1).join(' ') || 'Event';
     const feedbacks = analytics.feedbacks || [];

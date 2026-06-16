@@ -40,7 +40,7 @@ const ViewUserPage: React.FC = () => {
     const banMutation = useMutation({
         mutationFn: async (isBanning: boolean) => {
             const action = isBanning ? 'ban' : 'unban';
-            const response = await fetch(`${url}/api/user/${userId}/${action}`, {
+            const response = await fetch(`${url}/user/${userId}/${action}`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}` },
             });

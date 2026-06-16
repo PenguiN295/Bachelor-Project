@@ -172,7 +172,7 @@ public class EventController : ControllerBase
             var userLocation = new Point(filter.Longitude.Value, filter.Latitude.Value) { SRID = 4326 };
             if (string.IsNullOrWhiteSpace(filter.Search))
             {
-                query = query.Where(e => e.Location.Distance(userLocation) <= 0.1);
+                query = query.Where(e => e.Location.Distance(userLocation) <= 1.2); 
             }
             
             query = query.OrderBy(e => e.Location.Distance(userLocation));
